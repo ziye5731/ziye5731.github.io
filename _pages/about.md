@@ -1,6 +1,6 @@
 ---
 permalink: /
-title: "首页｜Homepage"
+title: "Homepage"
 author_profile: true
 redirect_from: 
   - /about/
@@ -8,4 +8,4 @@ redirect_from:
 ---
 
 ## About me
-I'm currently a student in Nankai University.
+Hi👋, I am currently a student at the [School of Statistics and Data Science](https://stat.nankai.edu.cn), Nankai University. 
