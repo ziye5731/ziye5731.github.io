@@ -1,8 +1,8 @@
 ---
 layout: archive
-title: "Publications"
+title: "Publications and Preprints"
 permalink: /publications/
-author_profile: true
+author_profile: false
 ---
 
 All my previous publications and preprints are listed below.

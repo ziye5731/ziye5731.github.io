@@ -72,6 +72,12 @@
     }
   }
 
+  /* Keep lists visually attached when they immediately follow a paragraph. */
+  p + ul,
+  p + ol {
+    margin-top: -1em;
+  }
+
   a {
     text-decoration: underline;
 
