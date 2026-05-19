@@ -36,3 +36,5 @@ I am also working on an open-source project, [FineTune](https://github.com/finet
 [Publications and Preprints]({{ '/publications/' | relative_url }}) contains my published papers and preprints.
 
 [Projects]({{ '/projects/' | relative_url }}) presents a selection of projects I am currently working on or have completed.
+
+[Notes]({{ '/notes/' | relative_url }}) includes some notes that I have written on various topics.
