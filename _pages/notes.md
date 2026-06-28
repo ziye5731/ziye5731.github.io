@@ -6,10 +6,10 @@ author_profile: false
 ---
 
 This page includes some notes that I have written on various topics. 
-I write these notes to make sure that I have a clear understanding of each topic.
+I write these notes to make sure that I have a clear understanding of each topic, and can quickly revisit them whenever needed.
 Feel free to reach out to me if you find any errors or have any suggestions regarding these notes.
 
 - [Instrumental Variable Regression](/notes/Instrumental_Variable_Regression.pdf)
 - [Mirror Descent](/notes/Mirror_Descent.pdf)
   - [Probability Simplex Example (Jupyter Notebook)](/notes/probability_simplex.html)
-
+- [Quantities of Information](/notes/quantities-of-information)
