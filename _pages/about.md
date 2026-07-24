@@ -8,6 +8,7 @@ redirect_from:
 ---
 
 ## About Me
+
 ### Short Bio
 Hi👋, I am currently a Master's student in Statistics at the [School of Statistics and Data Science](https://stat.nankai.edu.cn), Nankai University. 
 
@@ -20,21 +21,19 @@ My research interests lie at the intersection of **statistics**, **optimization*
 I am particularly interested in understanding the principles behind modern data-driven models and providing rigorous statistical and mathematical foundations for their behavior.
 
 Currently, I am working on the following topics:
-- Inverse problems, especially in infinite-dimensional settings;
-- Robust and model-agnostic uncertainty quantification for complex models;
+- Causal inference and effect estimation via conditional stochastic optimization;
+- Understanding neural network training and optimization from the perspective of dynamical systems.
 
 
 ### Beyond Research
-Apart from research, I am deeply passionate about **classical music** 🎵 and the **oboe**, which provide both inspiration and a sense of balance in my work. 
-Since 2022, I have served as the principal oboist of the Nankai University Chamber Orchestra and have performed in various orchestral and chamber music concerts.
-
-I am also working on an open-source project, [FineTune](https://github.com/finetune-double-reeds), which focuses on 3D-printed tools and devices for double-reed instruments.
+Apart from research, I am deeply passionate about **classical music** and the **oboe**, which provide both inspiration and a sense of balance in my work. 
+Visit [Misc]({{ '/misc/' | relative_url }}) to learn more.
 
 
 
 ## About This Website
-[Publications and Preprints]({{ '/publications/' | relative_url }}) contains my published papers and preprints.
+[Publications]({{ '/publications/' | relative_url }}) contains my published papers and preprints.
 
-[Projects]({{ '/projects/' | relative_url }}) presents a selection of projects I am currently working on or have completed.
+[Notes]({{ '/notes/' | relative_url }}) includes my notes and thoughts on various topics.
 
-[Notes]({{ '/notes/' | relative_url }}) includes some notes that I have written on various topics.
+[Misc]({{ '/misc/' | relative_url }}) shares my life and interests beyond research.
