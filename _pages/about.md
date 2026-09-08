@@ -25,6 +25,12 @@ Currently, I am working on the following topics:
 - Understanding neural network training and optimization from the perspective of dynamical systems.
 
 
+### Service
+
+Journal Reviewer:
+- IEEE Transactions on Neural Networks and Learning Systems
+
+
 ### Beyond Research
 Apart from research, I am deeply passionate about **classical music** and the **oboe**, which provide both inspiration and a sense of balance in my work. 
 Visit [Misc]({{ '/misc/' | relative_url }}) to learn more.
