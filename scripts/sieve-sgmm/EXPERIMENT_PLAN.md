@@ -1,6 +1,6 @@
 # Streaming Sieve GMM：实验设计与所需结果
 
-这份方案对应博客 `Streaming Sieve GMM for Nonlinear Instrumental Variable Regression` 的两项理论结果：有限基函数的 identification 条件，以及固定基函数下的均方收敛速率。当前工作只完成正文与实验设计，不继续执行实验。本文件属于研究与复现材料，由网站现有 `scripts` 排除规则保留在仓库中，不进入网页。
+这份方案对应博客 `Streaming Sieve GMM for Nonlinear Instrumental Variable Regression` 的两项理论结果：有限基函数的 identification 条件，以及固定基函数下的均方收敛速率。该方案已于 2026-10-23 获授权执行，A–E 均已完成；完整实验记录位于 `iv-regression/results/ssgmm-theory-20261023/REPORT.md`，原始运行前版本保存在该结果目录的 `experiment_plan.md`。本文件属于研究与复现材料，由网站现有 `scripts` 排除规则保留在仓库中，不进入网页。
 
 ## 1. 实验需要回答的具体问题
 
@@ -273,7 +273,7 @@ C 的 tracking 图和 E 的多初始化分布图可放进补充材料；若篇�
 
 ## 11. 旧实验的使用边界
 
-已经核对 RA 仓库 `results/2-nonlinear-comparative/` 下的结果、配置和日志；不继续运行或修改该项目。
+已经核对 RA 仓库 `results/2-nonlinear-comparative/` 下的结果、配置和日志；旧结果保持只读，新实验使用独立入口和结果目录。
 
 - `quadratic-linear` 的实际终点是 `5,000,000` 次迭代，保存的参数步长为 `0.01*t^-0.5`。不能与另外两组一起描述成统一的 `10^7` 次迭代、`eta=0.7,kappa=0.6` 设置，也不能用来检验正文的 harmonic 速率。
 - `quadratic-relu` 与 `exp-tanh` 保存了 `10,000,000` 次迭代、10 次重复的数据。归档配置包含 `eta=0.7,kappa=0.6`；仅凭配置文件不能确认每项历史实现细节，正式引用前还应核对执行时的代码版本、投影与报告的是最后迭代还是平均迭代。
@@ -281,4 +281,4 @@ C 的 tracking 图和 E 的多初始化分布图可放进补充材料；若篇�
 - 如使用旧图，必须给出 median/IQR 的实际定义，不能把它们称作 mean-square convergence 图。若从 `mean` 和总体标准差字段恢复平方误差均值，应先核对归档聚合代码的 `ddof=0` 约定，再用 `mean^2+std^2`。
 - TOSG 使用不同的 conditional two-sample oracle。若保留为额外数值背景，应单列 oracle 条件、完整训练抽样成本与稳定化处理；不能把等迭代数当作等样本或等信息预算下的比较。
 
-旧结果可用于提出上述问题与选择压力测试，但正式实验叙述以可版本化、可核验、与理论一致的新设置为准。新实验重新获得授权后，再按本方案执行。
+旧结果可用于提出上述问题与选择压力测试，但正式实验叙述以可版本化、可核验、与理论一致的新设置为准。本次执行已完成，保留 512/64 次重复与多维 2^18、2^19、2^20 三个预算的完整结果；模型与步长规则未按结果调整。

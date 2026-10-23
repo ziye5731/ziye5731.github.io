@@ -1,0 +1,1721 @@
+{
+  "date": "2026-10-23",
+  "code_commit": "f063275593a05699c6d52d4e45a9ac16ac64b67f",
+  "seed": 20261023,
+  "description": "One-observation SSGMM; paired Gaussian draws within repeated streams; independent initialization, pilot and test roles. Last and all-history averaged iterates.",
+  "bootstrap_replicates": 10000,
+  "bootstrap_unit": "Whole repeated stream, paired across configurations",
+  "independent_test_size": 32768,
+  "frozen_requirements": [
+    "contourpy==1.4.0",
+    "cycler==0.12.1",
+    "fonttools==4.67.0",
+    "kiwisolver==1.5.1",
+    "llvmlite==0.50.0",
+    "matplotlib==3.11.2",
+    "numba==0.68.0",
+    "numpy==2.5.4",
+    "packaging==26.3",
+    "pillow==13.0.0",
+    "pyparsing==3.3.3",
+    "python-dateutil==3.0.0",
+    "scipy==1.18.1",
+    "six==1.17.0",
+    "tzdata==2026.5"
+  ],
+  "groups": {
+    "calibration": {
+      "metadata": {
+        "status": "complete",
+        "group": "calibration",
+        "steps": 262144,
+        "repeats": 512,
+        "seed": 20261023,
+        "seed_lineage": "SeedSequence([SEED, group_id, role, repeat]); PCG64",
+        "group_id": 1,
+        "test_samples": 32768,
+        "pilot_samples_per_stream": 0,
+        "pilot_streams": 0,
+        "scale_pilot_samples": 0,
+        "started_at": "2026-10-23T13:29:06.364205+08:00",
+        "recursion": "One observation per iteration; old theta and old Jacobian gain; projection then same-observation Jacobian update.",
+        "coupling": "Common Gaussian draws and base initializations across configurations within each repeat; independent repeats.",
+        "stabilization": "Only declared parameter projection and fixed gain ridge; no direction clipping, exp clipping, restarts or early stopping.",
+        "metrics": "Arithmetic mean of squared parameter errors, Monte Carlo SE, Euclidean quantiles, independent-test structural risk.",
+        "slope_window": "Prespecified T/4<=t<=T; descriptive OLS log-log slope.",
+        "tracking": "Exact population target for calibration/linear; pilot target for ReLU; not evaluated for exp.",
+        "timing": "Compiled kernel wall seconds per repeat, excluding JIT/cache warm-up, pilot, test evaluation and plotting.",
+        "finished_at": "2026-10-23T13:29:36.939556+08:00"
+      },
+      "configurations": [
+        {
+          "label": "h1_strong_a3",
+          "basis": [
+            1
+          ],
+          "gamma": 1.0,
+          "a": 3.0,
+          "eta": 1.0,
+          "kappa": 0.6666666666666666,
+          "curvature": 0.01,
+          "oracle": false,
+          "model": 0,
+          "first_stage": 0,
+          "offset": 100.0,
+          "ridge": 1.0,
+          "radius": 1.0,
+          "center": [
+            0.0
+          ]
+        },
+        {
+          "label": "h2_strong_a3",
+          "basis": [
+            2
+          ],
+          "gamma": 1.0,
+          "a": 3.0,
+          "eta": 1.0,
+          "kappa": 0.6666666666666666,
+          "curvature": 0.01,
+          "oracle": false,
+          "model": 0,
+          "first_stage": 0,
+          "offset": 100.0,
+          "ridge": 1.0,
+          "radius": 1.0,
+          "center": [
+            0.0
+          ]
+        },
+        {
+          "label": "h2_weaker_a3",
+          "basis": [
+            2
+          ],
+          "gamma": 0.5,
+          "a": 3.0,
+          "eta": 1.0,
+          "kappa": 0.6666666666666666,
+          "curvature": 0.01,
+          "oracle": false,
+          "model": 0,
+          "first_stage": 0,
+          "offset": 100.0,
+          "ridge": 1.0,
+          "radius": 1.0,
+          "center": [
+            0.0
+          ]
+        },
+        {
+          "label": "h2_weaker_a12",
+          "basis": [
+            2
+          ],
+          "gamma": 0.5,
+          "a": 12.0,
+          "eta": 1.0,
+          "kappa": 0.6666666666666666,
+          "curvature": 0.01,
+          "oracle": false,
+          "model": 0,
+          "first_stage": 0,
+          "offset": 100.0,
+          "ridge": 1.0,
+          "radius": 1.0,
+          "center": [
+            0.0
+          ]
+        },
+        {
+          "label": "h2_weaker_a9",
+          "basis": [
+            2
+          ],
+          "gamma": 0.5,
+          "a": 9.0,
+          "eta": 1.0,
+          "kappa": 0.6666666666666666,
+          "curvature": 0.01,
+          "oracle": false,
+          "model": 0,
+          "first_stage": 0,
+          "offset": 100.0,
+          "ridge": 1.0,
+          "radius": 1.0,
+          "center": [
+            0.0
+          ]
+        }
+      ],
+      "truth": [
+        0.0
+      ],
+      "gamma": [
+        [
+          1.0
+        ]
+      ]
+    },
+    "tracking": {
+      "metadata": {
+        "status": "complete",
+        "group": "tracking",
+        "steps": 262144,
+        "repeats": 512,
+        "seed": 20261023,
+        "seed_lineage": "SeedSequence([SEED, group_id, role, repeat]); PCG64",
+        "group_id": 2,
+        "test_samples": 32768,
+        "pilot_samples_per_stream": 0,
+        "pilot_streams": 0,
+        "scale_pilot_samples": 0,
+        "started_at": "2026-10-23T13:29:36.941045+08:00",
+        "recursion": "One observation per iteration; old theta and old Jacobian gain; projection then same-observation Jacobian update.",
+        "coupling": "Common Gaussian draws and base initializations across configurations within each repeat; independent repeats.",
+        "stabilization": "Only declared parameter projection and fixed gain ridge; no direction clipping, exp clipping, restarts or early stopping.",
+        "metrics": "Arithmetic mean of squared parameter errors, Monte Carlo SE, Euclidean quantiles, independent-test structural risk.",
+        "slope_window": "Prespecified T/4<=t<=T; descriptive OLS log-log slope.",
+        "tracking": "Exact population target for calibration/linear; pilot target for ReLU; not evaluated for exp.",
+        "timing": "Compiled kernel wall seconds per repeat, excluding JIT/cache warm-up, pilot, test evaluation and plotting.",
+        "finished_at": "2026-10-23T13:30:43.767010+08:00"
+      },
+      "configurations": [
+        {
+          "label": "nonlinear_eta07_estimated",
+          "basis": [
+            2
+          ],
+          "gamma": 1.0,
+          "a": 3.0,
+          "eta": 0.7,
+          "kappa": 0.6,
+          "curvature": 0.01,
+          "oracle": false,
+          "model": 0,
+          "first_stage": 0,
+          "offset": 100.0,
+          "ridge": 1.0,
+          "radius": 1.0,
+          "center": [
+            0.0
+          ]
+        },
+        {
+          "label": "nonlinear_eta07_population",
+          "basis": [
+            2
+          ],
+          "gamma": 1.0,
+          "a": 3.0,
+          "eta": 0.7,
+          "kappa": 0.6,
+          "curvature": 0.01,
+          "oracle": true,
+          "model": 0,
+          "first_stage": 0,
+          "offset": 100.0,
+          "ridge": 1.0,
+          "radius": 1.0,
+          "center": [
+            0.0
+          ]
+        },
+        {
+          "label": "nonlinear_eta09_estimated",
+          "basis": [
+            2
+          ],
+          "gamma": 1.0,
+          "a": 3.0,
+          "eta": 0.9,
+          "kappa": 0.6,
+          "curvature": 0.01,
+          "oracle": false,
+          "model": 0,
+          "first_stage": 0,
+          "offset": 100.0,
+          "ridge": 1.0,
+          "radius": 1.0,
+          "center": [
+            0.0
+          ]
+        },
+        {
+          "label": "nonlinear_eta09_population",
+          "basis": [
+            2
+          ],
+          "gamma": 1.0,
+          "a": 3.0,
+          "eta": 0.9,
+          "kappa": 0.6,
+          "curvature": 0.01,
+          "oracle": true,
+          "model": 0,
+          "first_stage": 0,
+          "offset": 100.0,
+          "ridge": 1.0,
+          "radius": 1.0,
+          "center": [
+            0.0
+          ]
+        },
+        {
+          "label": "nonlinear_eta10_estimated",
+          "basis": [
+            2
+          ],
+          "gamma": 1.0,
+          "a": 3.0,
+          "eta": 1.0,
+          "kappa": 0.6666666666666666,
+          "curvature": 0.01,
+          "oracle": false,
+          "model": 0,
+          "first_stage": 0,
+          "offset": 100.0,
+          "ridge": 1.0,
+          "radius": 1.0,
+          "center": [
+            0.0
+          ]
+        },
+        {
+          "label": "nonlinear_eta10_population",
+          "basis": [
+            2
+          ],
+          "gamma": 1.0,
+          "a": 3.0,
+          "eta": 1.0,
+          "kappa": 0.6666666666666666,
+          "curvature": 0.01,
+          "oracle": true,
+          "model": 0,
+          "first_stage": 0,
+          "offset": 100.0,
+          "ridge": 1.0,
+          "radius": 1.0,
+          "center": [
+            0.0
+          ]
+        },
+        {
+          "label": "linear_eta07_estimated",
+          "basis": [
+            2
+          ],
+          "gamma": 1.0,
+          "a": 3.0,
+          "eta": 0.7,
+          "kappa": 0.6,
+          "curvature": 0.0,
+          "oracle": false,
+          "model": 0,
+          "first_stage": 0,
+          "offset": 100.0,
+          "ridge": 1.0,
+          "radius": 1.0,
+          "center": [
+            0.0
+          ]
+        },
+        {
+          "label": "linear_eta07_population",
+          "basis": [
+            2
+          ],
+          "gamma": 1.0,
+          "a": 3.0,
+          "eta": 0.7,
+          "kappa": 0.6,
+          "curvature": 0.0,
+          "oracle": true,
+          "model": 0,
+          "first_stage": 0,
+          "offset": 100.0,
+          "ridge": 1.0,
+          "radius": 1.0,
+          "center": [
+            0.0
+          ]
+        },
+        {
+          "label": "linear_eta09_estimated",
+          "basis": [
+            2
+          ],
+          "gamma": 1.0,
+          "a": 3.0,
+          "eta": 0.9,
+          "kappa": 0.6,
+          "curvature": 0.0,
+          "oracle": false,
+          "model": 0,
+          "first_stage": 0,
+          "offset": 100.0,
+          "ridge": 1.0,
+          "radius": 1.0,
+          "center": [
+            0.0
+          ]
+        },
+        {
+          "label": "linear_eta09_population",
+          "basis": [
+            2
+          ],
+          "gamma": 1.0,
+          "a": 3.0,
+          "eta": 0.9,
+          "kappa": 0.6,
+          "curvature": 0.0,
+          "oracle": true,
+          "model": 0,
+          "first_stage": 0,
+          "offset": 100.0,
+          "ridge": 1.0,
+          "radius": 1.0,
+          "center": [
+            0.0
+          ]
+        },
+        {
+          "label": "linear_eta10_estimated",
+          "basis": [
+            2
+          ],
+          "gamma": 1.0,
+          "a": 3.0,
+          "eta": 1.0,
+          "kappa": 0.6666666666666666,
+          "curvature": 0.0,
+          "oracle": false,
+          "model": 0,
+          "first_stage": 0,
+          "offset": 100.0,
+          "ridge": 1.0,
+          "radius": 1.0,
+          "center": [
+            0.0
+          ]
+        },
+        {
+          "label": "linear_eta10_population",
+          "basis": [
+            2
+          ],
+          "gamma": 1.0,
+          "a": 3.0,
+          "eta": 1.0,
+          "kappa": 0.6666666666666666,
+          "curvature": 0.0,
+          "oracle": true,
+          "model": 0,
+          "first_stage": 0,
+          "offset": 100.0,
+          "ridge": 1.0,
+          "radius": 1.0,
+          "center": [
+            0.0
+          ]
+        }
+      ],
+      "truth": [
+        0.0
+      ],
+      "gamma": [
+        [
+          1.0
+        ]
+      ]
+    },
+    "quadratic-linear": {
+      "metadata": {
+        "status": "complete",
+        "group": "quadratic-linear",
+        "steps": 1048576,
+        "repeats": 64,
+        "seed": 20261023,
+        "seed_lineage": "SeedSequence([SEED, group_id, role, repeat]); PCG64",
+        "group_id": 3,
+        "test_samples": 32768,
+        "pilot_samples_per_stream": 0,
+        "pilot_streams": 0,
+        "scale_pilot_samples": 0,
+        "started_at": "2026-10-23T13:35:00.796556+08:00",
+        "recursion": "One observation per iteration; old theta and old Jacobian gain; projection then same-observation Jacobian update.",
+        "coupling": "Common Gaussian draws and base initializations across configurations within each repeat; independent repeats.",
+        "stabilization": "Only declared parameter projection and fixed gain ridge; no direction clipping, exp clipping, restarts or early stopping.",
+        "metrics": "Arithmetic mean of squared parameter errors, Monte Carlo SE, Euclidean quantiles, independent-test structural risk.",
+        "slope_window": "Prespecified T/4<=t<=T; descriptive OLS log-log slope.",
+        "tracking": "Exact population target for calibration/linear; pilot target for ReLU; not evaluated for exp.",
+        "timing": "Compiled kernel wall seconds per repeat, excluding JIT/cache warm-up, pilot, test evaluation and plotting.",
+        "extension_budgets": [
+          262144,
+          524288,
+          1048576
+        ],
+        "extension_protocol": "Prespecified doubled budgets; same stream prefixes, unchanged configuration and kernels; all three budgets saved explicitly.",
+        "driver_sha256": "9b0ec3952d1559bbff1659f65bf62c536484f821fc9c80d005352a079dfc8b23",
+        "finished_at": "2026-10-23T13:38:52.543386+08:00"
+      },
+      "configurations": [
+        {
+          "label": "h1_power09",
+          "basis": [
+            1
+          ],
+          "model": 1,
+          "first_stage": 0,
+          "a": 0.1,
+          "eta": 0.9,
+          "kappa": 0.6,
+          "offset": 100.0,
+          "ridge": 0.01,
+          "radius": 20.0,
+          "center": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "curvature": 0.0,
+          "oracle": false
+        },
+        {
+          "label": "h01_power09",
+          "basis": [
+            0,
+            1
+          ],
+          "model": 1,
+          "first_stage": 0,
+          "a": 0.1,
+          "eta": 0.9,
+          "kappa": 0.6,
+          "offset": 100.0,
+          "ridge": 0.01,
+          "radius": 20.0,
+          "center": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "curvature": 0.0,
+          "oracle": false
+        },
+        {
+          "label": "h012_power09",
+          "basis": [
+            0,
+            1,
+            2
+          ],
+          "model": 1,
+          "first_stage": 0,
+          "a": 0.1,
+          "eta": 0.9,
+          "kappa": 0.6,
+          "offset": 100.0,
+          "ridge": 0.01,
+          "radius": 20.0,
+          "center": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "curvature": 0.0,
+          "oracle": false
+        },
+        {
+          "label": "h0123_power09",
+          "basis": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "model": 1,
+          "first_stage": 0,
+          "a": 0.1,
+          "eta": 0.9,
+          "kappa": 0.6,
+          "offset": 100.0,
+          "ridge": 0.01,
+          "radius": 20.0,
+          "center": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "curvature": 0.0,
+          "oracle": false
+        },
+        {
+          "label": "h1_harmonic",
+          "basis": [
+            1
+          ],
+          "model": 1,
+          "first_stage": 0,
+          "a": 2.1594000197183543,
+          "eta": 1.0,
+          "kappa": 0.6666666666666666,
+          "offset": 100.0,
+          "ridge": 0.01,
+          "radius": 20.0,
+          "center": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "curvature": 0.0,
+          "oracle": false
+        },
+        {
+          "label": "h01_harmonic",
+          "basis": [
+            0,
+            1
+          ],
+          "model": 1,
+          "first_stage": 0,
+          "a": 2.1594000197183543,
+          "eta": 1.0,
+          "kappa": 0.6666666666666666,
+          "offset": 100.0,
+          "ridge": 0.01,
+          "radius": 20.0,
+          "center": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "curvature": 0.0,
+          "oracle": false
+        },
+        {
+          "label": "h012_harmonic",
+          "basis": [
+            0,
+            1,
+            2
+          ],
+          "model": 1,
+          "first_stage": 0,
+          "a": 2.1594000197183543,
+          "eta": 1.0,
+          "kappa": 0.6666666666666666,
+          "offset": 100.0,
+          "ridge": 0.01,
+          "radius": 20.0,
+          "center": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "curvature": 0.0,
+          "oracle": false
+        },
+        {
+          "label": "h0123_harmonic",
+          "basis": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "model": 1,
+          "first_stage": 0,
+          "a": 2.1594000197183543,
+          "eta": 1.0,
+          "kappa": 0.6666666666666666,
+          "offset": 100.0,
+          "ridge": 0.01,
+          "radius": 20.0,
+          "center": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "curvature": 0.0,
+          "oracle": false
+        }
+      ],
+      "truth": [
+        0.3391554581755715,
+        -0.35195552849846945,
+        0.15359972897617613,
+        3.084608221991263,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        1.0
+      ],
+      "gamma": [
+        [
+          -1.103338449065532,
+          -0.7250246402444398,
+          -0.7818052573180567,
+          0.2669758563943925
+        ],
+        [
+          -0.24858072943889084,
+          0.12648305151184983,
+          0.8430425708043379,
+          0.8579365494757685
+        ],
+        [
+          0.47518364194858514,
+          -0.4507685980824168,
+          -0.7549322818237513,
+          -0.8148141073390911
+        ],
+        [
+          -0.3438548577942607,
+          -0.05138009378693365,
+          -0.972273677374357,
+          -1.1344875329570228
+        ],
+        [
+          0.30570521940427436,
+          -1.8516850300587613,
+          -0.1770535081731753,
+          0.42582566727720134
+        ],
+        [
+          -0.9853556064014685,
+          -1.1129541306361368,
+          -0.7606260324368407,
+          0.6480245888364551
+        ],
+        [
+          -0.12983135641150817,
+          -1.8695972328417114,
+          -0.42334910981158214,
+          1.013896799797998
+        ],
+        [
+          0.983715344494681,
+          0.6300419507298725,
+          -0.23805880511791805,
+          -1.8449398759528108
+        ]
+      ],
+      "signal": [
+        {
+          "basis": [
+            1
+          ],
+          "p": 8,
+          "rank": 4,
+          "mu": 0.0,
+          "min_parameter_singular_value": 0.0,
+          "g_mcse_frobenius": 0.0,
+          "g_degree3_frobenius": 0.0,
+          "signal_type": "exact"
+        },
+        {
+          "basis": [
+            0,
+            1
+          ],
+          "p": 9,
+          "rank": 5,
+          "mu": 0.0,
+          "min_parameter_singular_value": 0.0,
+          "g_mcse_frobenius": 0.0,
+          "g_degree3_frobenius": 0.0,
+          "signal_type": "exact"
+        },
+        {
+          "basis": [
+            0,
+            1,
+            2
+          ],
+          "p": 45,
+          "rank": 14,
+          "mu": 0.12547049890795642,
+          "min_parameter_singular_value": 0.3542181515788772,
+          "g_mcse_frobenius": 0.0,
+          "g_degree3_frobenius": 0.0,
+          "signal_type": "exact"
+        },
+        {
+          "basis": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "p": 165,
+          "rank": 14,
+          "mu": 0.12547049890795642,
+          "min_parameter_singular_value": 0.3542181515788772,
+          "g_mcse_frobenius": 0.0,
+          "g_degree3_frobenius": 0.0,
+          "signal_type": "exact"
+        }
+      ]
+    },
+    "quadratic-relu": {
+      "metadata": {
+        "status": "complete",
+        "group": "quadratic-relu",
+        "steps": 1048576,
+        "repeats": 64,
+        "seed": 20261023,
+        "seed_lineage": "SeedSequence([SEED, group_id, role, repeat]); PCG64",
+        "group_id": 4,
+        "test_samples": 32768,
+        "pilot_samples_per_stream": 1048576,
+        "pilot_streams": 2,
+        "scale_pilot_samples": 0,
+        "started_at": "2026-10-23T13:38:54.488640+08:00",
+        "recursion": "One observation per iteration; old theta and old Jacobian gain; projection then same-observation Jacobian update.",
+        "coupling": "Common Gaussian draws and base initializations across configurations within each repeat; independent repeats.",
+        "stabilization": "Only declared parameter projection and fixed gain ridge; no direction clipping, exp clipping, restarts or early stopping.",
+        "metrics": "Arithmetic mean of squared parameter errors, Monte Carlo SE, Euclidean quantiles, independent-test structural risk.",
+        "slope_window": "Prespecified T/4<=t<=T; descriptive OLS log-log slope.",
+        "tracking": "Exact population target for calibration/linear; pilot target for ReLU; not evaluated for exp.",
+        "timing": "Compiled kernel wall seconds per repeat, excluding JIT/cache warm-up, pilot, test evaluation and plotting.",
+        "extension_budgets": [
+          262144,
+          524288,
+          1048576
+        ],
+        "extension_protocol": "Prespecified doubled budgets; same stream prefixes, unchanged configuration and kernels; all three budgets saved explicitly.",
+        "driver_sha256": "9b0ec3952d1559bbff1659f65bf62c536484f821fc9c80d005352a079dfc8b23",
+        "finished_at": "2026-10-23T13:43:07.407898+08:00"
+      },
+      "configurations": [
+        {
+          "label": "h1_power09",
+          "basis": [
+            1
+          ],
+          "model": 1,
+          "first_stage": 1,
+          "a": 0.1,
+          "eta": 0.9,
+          "kappa": 0.6,
+          "offset": 100.0,
+          "ridge": 0.01,
+          "radius": 20.0,
+          "center": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "curvature": 0.0,
+          "oracle": false
+        },
+        {
+          "label": "h01_power09",
+          "basis": [
+            0,
+            1
+          ],
+          "model": 1,
+          "first_stage": 1,
+          "a": 0.1,
+          "eta": 0.9,
+          "kappa": 0.6,
+          "offset": 100.0,
+          "ridge": 0.01,
+          "radius": 20.0,
+          "center": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "curvature": 0.0,
+          "oracle": false
+        },
+        {
+          "label": "h012_power09",
+          "basis": [
+            0,
+            1,
+            2
+          ],
+          "model": 1,
+          "first_stage": 1,
+          "a": 0.1,
+          "eta": 0.9,
+          "kappa": 0.6,
+          "offset": 100.0,
+          "ridge": 0.01,
+          "radius": 20.0,
+          "center": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "curvature": 0.0,
+          "oracle": false
+        },
+        {
+          "label": "h0123_power09",
+          "basis": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "model": 1,
+          "first_stage": 1,
+          "a": 0.1,
+          "eta": 0.9,
+          "kappa": 0.6,
+          "offset": 100.0,
+          "ridge": 0.01,
+          "radius": 20.0,
+          "center": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "curvature": 0.0,
+          "oracle": false
+        },
+        {
+          "label": "h1_harmonic",
+          "basis": [
+            1
+          ],
+          "model": 1,
+          "first_stage": 1,
+          "a": 32.69222678272464,
+          "eta": 1.0,
+          "kappa": 0.6666666666666666,
+          "offset": 100.0,
+          "ridge": 0.01,
+          "radius": 20.0,
+          "center": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "curvature": 0.0,
+          "oracle": false
+        },
+        {
+          "label": "h01_harmonic",
+          "basis": [
+            0,
+            1
+          ],
+          "model": 1,
+          "first_stage": 1,
+          "a": 32.69222678272464,
+          "eta": 1.0,
+          "kappa": 0.6666666666666666,
+          "offset": 100.0,
+          "ridge": 0.01,
+          "radius": 20.0,
+          "center": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "curvature": 0.0,
+          "oracle": false
+        },
+        {
+          "label": "h012_harmonic",
+          "basis": [
+            0,
+            1,
+            2
+          ],
+          "model": 1,
+          "first_stage": 1,
+          "a": 32.69222678272464,
+          "eta": 1.0,
+          "kappa": 0.6666666666666666,
+          "offset": 100.0,
+          "ridge": 0.01,
+          "radius": 20.0,
+          "center": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "curvature": 0.0,
+          "oracle": false
+        },
+        {
+          "label": "h0123_harmonic",
+          "basis": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "model": 1,
+          "first_stage": 1,
+          "a": 32.69222678272464,
+          "eta": 1.0,
+          "kappa": 0.6666666666666666,
+          "offset": 100.0,
+          "ridge": 0.01,
+          "radius": 20.0,
+          "center": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "curvature": 0.0,
+          "oracle": false
+        }
+      ],
+      "truth": [
+        0.3391554581755715,
+        -0.35195552849846945,
+        0.15359972897617613,
+        3.084608221991263,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        1.0
+      ],
+      "gamma": [
+        [
+          -1.103338449065532,
+          -0.7250246402444398,
+          -0.7818052573180567,
+          0.2669758563943925
+        ],
+        [
+          -0.24858072943889084,
+          0.12648305151184983,
+          0.8430425708043379,
+          0.8579365494757685
+        ],
+        [
+          0.47518364194858514,
+          -0.4507685980824168,
+          -0.7549322818237513,
+          -0.8148141073390911
+        ],
+        [
+          -0.3438548577942607,
+          -0.05138009378693365,
+          -0.972273677374357,
+          -1.1344875329570228
+        ],
+        [
+          0.30570521940427436,
+          -1.8516850300587613,
+          -0.1770535081731753,
+          0.42582566727720134
+        ],
+        [
+          -0.9853556064014685,
+          -1.1129541306361368,
+          -0.7606260324368407,
+          0.6480245888364551
+        ],
+        [
+          -0.12983135641150817,
+          -1.8695972328417114,
+          -0.42334910981158214,
+          1.013896799797998
+        ],
+        [
+          0.983715344494681,
+          0.6300419507298725,
+          -0.23805880511791805,
+          -1.8449398759528108
+        ]
+      ],
+      "signal": [
+        {
+          "basis": [
+            1
+          ],
+          "p": 8,
+          "rank": 8,
+          "mu": 0.0,
+          "min_parameter_singular_value": 0.0,
+          "g_mcse_frobenius": 0.05661504343212981,
+          "g_degree3_frobenius": 7.274879792574536,
+          "signal_type": "independent Rao-Blackwell Monte Carlo pilot"
+        },
+        {
+          "basis": [
+            0,
+            1
+          ],
+          "p": 9,
+          "rank": 9,
+          "mu": 0.0,
+          "min_parameter_singular_value": 0.0,
+          "g_mcse_frobenius": 0.05857582451577977,
+          "g_degree3_frobenius": 7.274879792574536,
+          "signal_type": "independent Rao-Blackwell Monte Carlo pilot"
+        },
+        {
+          "basis": [
+            0,
+            1,
+            2
+          ],
+          "p": 45,
+          "rank": 14,
+          "mu": 0.0006516307904794043,
+          "min_parameter_singular_value": 0.025527059965444597,
+          "g_mcse_frobenius": 0.1544584898167853,
+          "g_degree3_frobenius": 7.274879792574536,
+          "signal_type": "independent Rao-Blackwell Monte Carlo pilot"
+        },
+        {
+          "basis": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "p": 165,
+          "rank": 14,
+          "mu": 0.012922758473617603,
+          "min_parameter_singular_value": 0.11367831135980866,
+          "g_mcse_frobenius": 0.33839310483162477,
+          "g_degree3_frobenius": 7.274879792574536,
+          "signal_type": "independent Rao-Blackwell Monte Carlo pilot"
+        }
+      ]
+    },
+    "exp-tanh": {
+      "metadata": {
+        "status": "complete",
+        "group": "exp-tanh",
+        "steps": 1048576,
+        "repeats": 64,
+        "seed": 20261023,
+        "seed_lineage": "SeedSequence([SEED, group_id, role, repeat]); PCG64",
+        "group_id": 5,
+        "test_samples": 32768,
+        "pilot_samples_per_stream": 1048576,
+        "pilot_streams": 2,
+        "scale_pilot_samples": 1048576,
+        "started_at": "2026-10-23T13:43:09.299077+08:00",
+        "recursion": "One observation per iteration; old theta and old Jacobian gain; projection then same-observation Jacobian update.",
+        "coupling": "Common Gaussian draws and base initializations across configurations within each repeat; independent repeats.",
+        "stabilization": "Only declared parameter projection and fixed gain ridge; no direction clipping, exp clipping, restarts or early stopping.",
+        "metrics": "Arithmetic mean of squared parameter errors, Monte Carlo SE, Euclidean quantiles, independent-test structural risk.",
+        "slope_window": "Prespecified T/4<=t<=T; descriptive OLS log-log slope.",
+        "tracking": "Exact population target for calibration/linear; pilot target for ReLU; not evaluated for exp.",
+        "timing": "Compiled kernel wall seconds per repeat, excluding JIT/cache warm-up, pilot, test evaluation and plotting.",
+        "extension_budgets": [
+          262144,
+          524288,
+          1048576
+        ],
+        "extension_protocol": "Prespecified doubled budgets; same stream prefixes, unchanged configuration and kernels; all three budgets saved explicitly.",
+        "driver_sha256": "9b0ec3952d1559bbff1659f65bf62c536484f821fc9c80d005352a079dfc8b23",
+        "finished_at": "2026-10-23T13:46:06.255676+08:00"
+      },
+      "configurations": [
+        {
+          "label": "h1_zero",
+          "basis": [
+            1
+          ],
+          "model": 2,
+          "first_stage": 2,
+          "a": 0.1,
+          "eta": 0.9,
+          "kappa": 0.6,
+          "offset": 100.0,
+          "ridge": 0.01,
+          "radius": 2.0,
+          "center": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "curvature": 0.0,
+          "oracle": false,
+          "initialization": "zero"
+        },
+        {
+          "label": "h01_zero",
+          "basis": [
+            0,
+            1
+          ],
+          "model": 2,
+          "first_stage": 2,
+          "a": 0.1,
+          "eta": 0.9,
+          "kappa": 0.6,
+          "offset": 100.0,
+          "ridge": 0.01,
+          "radius": 2.0,
+          "center": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "curvature": 0.0,
+          "oracle": false,
+          "initialization": "zero"
+        },
+        {
+          "label": "h012_zero",
+          "basis": [
+            0,
+            1,
+            2
+          ],
+          "model": 2,
+          "first_stage": 2,
+          "a": 0.1,
+          "eta": 0.9,
+          "kappa": 0.6,
+          "offset": 100.0,
+          "ridge": 0.01,
+          "radius": 2.0,
+          "center": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "curvature": 0.0,
+          "oracle": false,
+          "initialization": "zero"
+        },
+        {
+          "label": "h0123_zero",
+          "basis": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "model": 2,
+          "first_stage": 2,
+          "a": 0.1,
+          "eta": 0.9,
+          "kappa": 0.6,
+          "offset": 100.0,
+          "ridge": 0.01,
+          "radius": 2.0,
+          "center": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "curvature": 0.0,
+          "oracle": false,
+          "initialization": "zero"
+        },
+        {
+          "label": "h1_near",
+          "basis": [
+            1
+          ],
+          "model": 2,
+          "first_stage": 2,
+          "a": 0.1,
+          "eta": 0.9,
+          "kappa": 0.6,
+          "offset": 100.0,
+          "ridge": 0.01,
+          "radius": 2.0,
+          "center": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "curvature": 0.0,
+          "oracle": false,
+          "initialization": "near"
+        },
+        {
+          "label": "h01_near",
+          "basis": [
+            0,
+            1
+          ],
+          "model": 2,
+          "first_stage": 2,
+          "a": 0.1,
+          "eta": 0.9,
+          "kappa": 0.6,
+          "offset": 100.0,
+          "ridge": 0.01,
+          "radius": 2.0,
+          "center": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "curvature": 0.0,
+          "oracle": false,
+          "initialization": "near"
+        },
+        {
+          "label": "h012_near",
+          "basis": [
+            0,
+            1,
+            2
+          ],
+          "model": 2,
+          "first_stage": 2,
+          "a": 0.1,
+          "eta": 0.9,
+          "kappa": 0.6,
+          "offset": 100.0,
+          "ridge": 0.01,
+          "radius": 2.0,
+          "center": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "curvature": 0.0,
+          "oracle": false,
+          "initialization": "near"
+        },
+        {
+          "label": "h0123_near",
+          "basis": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "model": 2,
+          "first_stage": 2,
+          "a": 0.1,
+          "eta": 0.9,
+          "kappa": 0.6,
+          "offset": 100.0,
+          "ridge": 0.01,
+          "radius": 2.0,
+          "center": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "curvature": 0.0,
+          "oracle": false,
+          "initialization": "near"
+        },
+        {
+          "label": "h1_local",
+          "basis": [
+            1
+          ],
+          "model": 2,
+          "first_stage": 2,
+          "a": 0.1,
+          "eta": 0.9,
+          "kappa": 0.6,
+          "offset": 100.0,
+          "ridge": 0.01,
+          "radius": 0.1,
+          "center": [
+            0.05241105252569043,
+            -0.0543890987043801,
+            0.023736381854526273,
+            0.4766768738254236
+          ],
+          "curvature": 0.0,
+          "oracle": false,
+          "initialization": "local"
+        },
+        {
+          "label": "h01_local",
+          "basis": [
+            0,
+            1
+          ],
+          "model": 2,
+          "first_stage": 2,
+          "a": 0.1,
+          "eta": 0.9,
+          "kappa": 0.6,
+          "offset": 100.0,
+          "ridge": 0.01,
+          "radius": 0.1,
+          "center": [
+            0.05241105252569043,
+            -0.0543890987043801,
+            0.023736381854526273,
+            0.4766768738254236
+          ],
+          "curvature": 0.0,
+          "oracle": false,
+          "initialization": "local"
+        },
+        {
+          "label": "h012_local",
+          "basis": [
+            0,
+            1,
+            2
+          ],
+          "model": 2,
+          "first_stage": 2,
+          "a": 0.1,
+          "eta": 0.9,
+          "kappa": 0.6,
+          "offset": 100.0,
+          "ridge": 0.01,
+          "radius": 0.1,
+          "center": [
+            0.05241105252569043,
+            -0.0543890987043801,
+            0.023736381854526273,
+            0.4766768738254236
+          ],
+          "curvature": 0.0,
+          "oracle": false,
+          "initialization": "local"
+        },
+        {
+          "label": "h0123_local",
+          "basis": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "model": 2,
+          "first_stage": 2,
+          "a": 0.1,
+          "eta": 0.9,
+          "kappa": 0.6,
+          "offset": 100.0,
+          "ridge": 0.01,
+          "radius": 0.1,
+          "center": [
+            0.05241105252569043,
+            -0.0543890987043801,
+            0.023736381854526273,
+            0.4766768738254236
+          ],
+          "curvature": 0.0,
+          "oracle": false,
+          "initialization": "local"
+        }
+      ],
+      "truth": [
+        0.05241105252569043,
+        -0.0543890987043801,
+        0.023736381854526273,
+        0.4766768738254236
+      ],
+      "gamma": [
+        [
+          -0.11033384490655321,
+          -0.07250246402444398,
+          -0.07818052573180567,
+          0.026697585639439247
+        ],
+        [
+          -0.024858072943889087,
+          0.012648305151184983,
+          0.08430425708043379,
+          0.08579365494757685
+        ],
+        [
+          0.04751836419485852,
+          -0.045076859808241686,
+          -0.07549322818237514,
+          -0.08148141073390912
+        ],
+        [
+          -0.03438548577942607,
+          -0.0051380093786933655,
+          -0.0972273677374357,
+          -0.11344875329570228
+        ],
+        [
+          0.030570521940427437,
+          -0.18516850300587614,
+          -0.01770535081731753,
+          0.042582566727720136
+        ],
+        [
+          -0.09853556064014685,
+          -0.11129541306361368,
+          -0.07606260324368408,
+          0.06480245888364551
+        ],
+        [
+          -0.012983135641150818,
+          -0.18695972328417115,
+          -0.042334910981158214,
+          0.10138967997979981
+        ],
+        [
+          0.09837153444946811,
+          0.06300419507298725,
+          -0.023805880511791805,
+          -0.1844939875952811
+        ]
+      ],
+      "signal": [
+        {
+          "basis": [
+            1
+          ],
+          "p": 8,
+          "rank": 4,
+          "mu": 0.0015905064575971685,
+          "min_parameter_singular_value": 0.039881154165810805,
+          "g_mcse_frobenius": 0.0016719742860791436,
+          "g_degree3_frobenius": 0.02629506581565478,
+          "signal_type": "independent Rao-Blackwell Monte Carlo pilot"
+        },
+        {
+          "basis": [
+            0,
+            1
+          ],
+          "p": 9,
+          "rank": 4,
+          "mu": 0.015869447507056232,
+          "min_parameter_singular_value": 0.1259739953603768,
+          "g_mcse_frobenius": 0.001718362449530094,
+          "g_degree3_frobenius": 0.02629506581565478,
+          "signal_type": "independent Rao-Blackwell Monte Carlo pilot"
+        },
+        {
+          "basis": [
+            0,
+            1,
+            2
+          ],
+          "p": 45,
+          "rank": 4,
+          "mu": 0.016189574994935303,
+          "min_parameter_singular_value": 0.1272382607352651,
+          "g_mcse_frobenius": 0.004209100406275483,
+          "g_degree3_frobenius": 0.02629506581565478,
+          "signal_type": "independent Rao-Blackwell Monte Carlo pilot"
+        },
+        {
+          "basis": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "p": 165,
+          "rank": 4,
+          "mu": 0.016287290473457724,
+          "min_parameter_singular_value": 0.12762166929427668,
+          "g_mcse_frobenius": 0.008421851712631774,
+          "g_degree3_frobenius": 0.02629506581565478,
+          "signal_type": "independent Rao-Blackwell Monte Carlo pilot"
+        }
+      ]
+    }
+  }
+}

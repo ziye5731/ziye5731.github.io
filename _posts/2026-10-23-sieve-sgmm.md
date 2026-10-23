@@ -598,7 +598,238 @@ whereas its estimated rows fluctuate at finite sample sizes. The theory
 therefore supports checking signal, curvature, and noise together. It
 does not imply that a larger basis always improves estimation.
 
-## 5. Scope and implications
+## 5. Experiments: identification, rates, and finite-sample limitations
+
+The experiments follow the two theoretical questions in that order. First,
+a scalar model lets us verify identification and every condition of the
+local rate result analytically. We then test the effect of basis expansion
+in a multivariate model, and use a nonlinear exponential model to examine
+initialization and the limits of local conclusions.
+
+All runs use the one-observation recursion (8), with the previous Jacobian
+state, parameter projection, and the average of all updated iterates. The
+compiled implementation was checked against the existing SSGMM code on
+identical streams. No configuration uses direction clipping, exponential
+clipping, restarts, or early stopping. The full settings, fixed parameter
+vectors, seeds, and code version are recorded in the
+[experiment protocol]({{ '/files/sieve-sgmm/protocol.json' | relative_url }}).
+The [terminal statistics]({{ '/files/sieve-sgmm/terminal-statistics.csv' | relative_url }})
+and [budget comparisons]({{ '/files/sieve-sgmm/budget-statistics.csv' | relative_url }})
+include all configurations, both estimators, and the uncertainty diagnostics.
+
+### Statistical protocol
+{:.no_toc}
+
+The scalar groups use 512 independent repeated streams, each of length
+$$T=2^{18}$$. Multivariate groups use 64 repetitions, first at $$2^{18}$$
+and then through the prespecified $$2^{19}$$ and $$2^{20}$$ budgets.
+Configurations share Gaussian draws within a repetition; repetitions are
+independent. The extended streams reproduce the initial $$2^{18}$$
+parameter and average checkpoints exactly. The master seed is 20261023;
+initialization, pilot estimation, and evaluation use separate random streams.
+
+The primary statistic is the arithmetic mean of **squared parameter
+errors** across repetitions. Monte Carlo standard errors (MCSEs) are
+computed from those squared errors. Shading in the figures is the
+pointwise normal approximation $$\widehat{\mathrm{MSE}}\pm1.96\,\mathrm{MCSE}$$,
+not a simultaneous confidence band. We also report percentile bootstrap
+intervals using 10,000 resamples of whole repeated trajectories
+[Efron (1979)][efron]. Resampling individual, dependent time checkpoints
+would give a different and inappropriate uncertainty calculation.
+Descriptive log–log slopes use the fixed terminal window $$T/4\le t\le T$$.
+They do not establish an asymptotic rate.
+
+An independent fixed test set of $$2^{15}$$ observations evaluates
+structural risk,
+$$\mathbb E[(g(\hat\theta;x)-g(\theta_*;x))^2]$$.
+Outcome prediction MSE is auxiliary: under endogeneity its residual cross
+term need not vanish, so it cannot replace parameter recovery or
+structural risk. Repeated-stream intervals do not include pilot uncertainty
+or finite-test-set integration error. All repetitions were retained; there
+were no unrecovered numerical failures.
+
+### A calibrated nonlinear model
+{:.no_toc}
+
+Let $$z,u,\nu$$ be independent standard Gaussian variables and set
+
+$$
+x=\gamma z+u,\qquad
+\varepsilon=0.5u+0.5(u^2-1)+\nu,\qquad
+y=g(0;x)+\varepsilon,
+\qquad g(\theta;x)=(\theta+0.01\theta^2)x^2.
+$$
+
+This model is nonlinear in its parameter. It has
+$$\mathbb E[\varepsilon\mid z]=0$$,
+$$\operatorname{Cov}(x,\varepsilon)=0.5$$, and
+$$\mathbb E[x^2\varepsilon]=1$$; even the structural feature is endogenous.
+Use $$\Theta=[-1,1]$$, $$\theta_0=0.5$$, $$S_0=0$$,
+$$\lambda=1$$, $$t_0=100$$,
+$$\alpha_t=a/(t+100)$$, and $$\beta_t=(t+100)^{-2/3}$$.
+
+The degree-one moment is identically zero. For degree two,
+$$\bar m_2(\theta)=\sqrt2\gamma^2(\theta+0.01\theta^2)$$ and
+$$\mu_2=2\gamma^4$$. The moment has a unique zero on the parameter region.
+Its Lipschitz constant is $$L=0.02\sqrt2\gamma^2$$. For
+$$\gamma=1$$ and $$0.5$$, the constants in (22) satisfy the radius
+condition with $$r=1$$; all required fourth moments are finite. Thus the
+identifying runs provide a setting in which the theorem's region and
+moment assumptions can actually be checked.
+
+| Moment | $$\gamma$$ | $$a$$ | Last-iterate MSE | Averaged-iterate MSE | Last-iterate slope |
+|:--|--:|--:|--:|--:|--:|
+| Degree 1 | 1 | 3 | 0.2712 | 0.2711 | 0.001 |
+| Degree 2 | 1 | 3 | 4.692e-06 | 5.016e-06 | -1.054 |
+| Degree 2 | 0.5 | 3 | 0.003134 | 0.006832 | -0.671 |
+| Degree 2 | 0.5 | 12 | 5.955e-05 | 0.0001083 | -1.085 |
+| Degree 2 | 0.5 | 9 | 5.769e-05 | 0.0001579 | -1.110 |
+
+The unidentifying degree-one moment does not recover the parameter.
+With degree two and $$\gamma=1$$, $$h=2/3$$ and $$ah=2>1$$;
+the observed error is compatible with the $$1/T$$ setting. Its terminal
+MSE has a repeat-bootstrap 95% interval of
+$$[4.16,5.25]\times10^{-6}$$.
+
+Reducing $$\gamma$$ to $$0.5$$ gives $$h=1/9$$. Keeping $$a=3$$ produces
+much slower recovery; raising it to 12 restores the sufficient
+$$ah>1$$ condition and improves the finite-sample error. The observed
+slope near $$-0.67$$ in the fixed-coefficient weak-signal case is faster
+than the theorem's conservative $$-1/3$$ upper-bound exponent. This is
+allowed by the bound. The boundary choice $$a=9$$ is also retained;
+these finite curves cannot establish that a logarithmic factor must
+appear when $$ah=1$$.
+
+[![Identification and rate calibration: last, averaged, scaled errors, and terminal distributions]({{ '/images/sieve-sgmm/calibration-rates.png' | relative_url }})]({{ '/images/sieve-sgmm/calibration-rates.svg' | relative_url }})
+
+*Scalar calibration, 512 repetitions. Both estimators and all five
+configurations are shown. The dotted line is a scale reference; the
+terminal distributions retain every repeated stream.*
+
+### Tracking need not determine the observed rate
+{:.no_toc}
+
+Using the same scalar DGP, we compare exponent pairs
+$$(\eta,\kappa)=(0.7,0.6),(0.9,0.6),(1,2/3)$$, both with curvature
+0.01 and with the parameter-linear map $$g(\theta;x)=\theta x^2$$.
+An additional diagnostic uses the exact population Jacobian in the gain;
+it has information unavailable to the estimator.
+
+The estimated- and population-Jacobian last-iterate curves are close.
+For example, the estimated-Jacobian slopes in the nonlinear model are
+approximately $$-0.685,-0.894,-0.998$$, respectively. Here tracking is
+not the dominant finite-sample error, and the nonlinear model has small
+curvature. Consequently, these experiments do not establish sharpness
+of the moving-target term in (28). The
+[tracking fourth-moment plot]({{ '/images/sieve-sgmm/tracking-scales.svg' | relative_url }})
+shows the observed errors alongside the theoretical time scales, with
+arbitrary vertical constants. Faster empirical behavior does not improve
+the general theorem.
+
+### Multivariate basis expansion: signal and noise have different effects
+{:.no_toc}
+
+Use $$d_x=4,d_z=8$$ and the 14-parameter symmetric quadratic structure
+$$g(\theta;x)=b^\top x+x^\top A x$$. Let
+$$x=\phi(\Gamma^\top z)+c+v$$, with independent
+$$z\sim N(0,I_8)$$, $$c,v\sim N(0,0.5I_4)$$,
+$$e\sim N(0,1)$$, and structural error
+$$\varepsilon=0.5\mathbf1^\top c+e$$.
+The fixed full-column-rank $$\Gamma$$ and true $$b$$ are generated with
+parameter seed 10, with $$\Gamma_{ij}\sim N(0,1)$$ and
+$$b_*\sim N(0,4I_4)$$; $$A_*=I_4$$. Their actual values are in the protocol.
+Initialize $$b$$ from $$N(0,0.01I_4)$$ and $$A=0$$, and project onto
+the radius-20 ball about zero, which contains the truth. Although
+quadratic in $$x$$, this model is linear in $$\theta$$, so $$L=0$$.
+
+Compare complete degree sets $$\{1\},\{0,1\},\{0,1,2\},\{0,1,2,3\}$$,
+with 8, 9, 45, and 165 moments. Both a power schedule
+$$(a,\eta,\kappa)=(0.1,0.9,0.6)$$ and a harmonic diagnostic are retained,
+with $$\lambda=0.01$$ and offset at least 100. The harmonic diagnostic
+uses $$\eta=1,\kappa=2/3$$. In that diagnostic,
+a shared coefficient is set before training to
+$$a=2/\min(h_{012},h_{0123})$$, using exact signal for the linear first
+stage and independent pilot estimates for ReLU. The latter does not
+certify the exact population threshold.
+
+For $$\phi(s)=s$$, the exact ranks are **4, 5, 14, 14**. The last two
+sets have the same $$\mu=0.12547$$, and the degree-three Jacobian block
+is exactly zero. Under the harmonic schedule, their terminal last-iterate
+MSEs at $$2^{20}$$ are respectively **2.256e-5** and **5.494e-5**.
+H012's terminal slope is approximately $$-1.03$$. H0123 is still in a
+steeper transient; its extra zero-signal rows do not improve recovery at
+this budget. The small-coefficient power runs and the full-history averages
+also retain substantial transient effects. They cannot be treated as
+measurements of a sharp asymptotic exponent.
+
+[![All basis sets and both schedules in the quadratic-linear model]({{ '/images/sieve-sgmm/linear-basis-rates.png' | relative_url }})]({{ '/images/sieve-sgmm/linear-basis-rates.svg' | relative_url }})
+
+*Linear first stage, 64 repetitions through $$2^{20}$$ observations.
+The first two moment sets are rank deficient. The last two have identical
+population identification strength; degree three adds sampling fluctuations.*
+
+For $$\phi(s)=\max(s,0)$$, higher degrees can capture additional
+conditional sensitivity. Two independent Rao–Blackwell pilots, each with
+$$2^{20}$$ instruments, estimate $$\mu_{012}\approx0.000652$$ and
+$$\mu_{0123}\approx0.0129$$. The estimated degree-three block has
+Frobenius norm about 7.275. Pilot batch means and their Monte Carlo errors
+are retained; a numerically nonzero singular value is not a proof of
+population full rank.
+
+At $$2^{20}$$, the harmonic last-iterate MSE is **0.3039** for H012 and
+**0.001597** for H0123. Their repeat-bootstrap 95% intervals are
+approximately $$[0.122,0.544]$$ and $$[0.00122,0.00203]$$.
+H012's mean is sensitive to large-error repetitions: its largest run
+contributes about 28% of terminal MSE, down from about 44% at $$2^{18}$$.
+Reporting only a median would hide this feature.
+
+[![All basis sets and both schedules in the quadratic-ReLU model]({{ '/images/sieve-sgmm/relu-basis-rates.png' | relative_url }})]({{ '/images/sieve-sgmm/relu-basis-rates.svg' | relative_url }})
+
+*ReLU first stage, 64 repetitions. Both schedules and estimators are
+retained, including slow and high-error finite-sample trajectories. The
+signal calculations use independent pilots and carry estimation uncertainty.*
+
+Together, the two first stages support the signal–noise distinction:
+degree three adds no population signal in the linear case, whereas it
+adds sensitivity and improves recovery in this ReLU setting. They do not
+support a universal preference for a larger basis.
+
+### A nonlinear-parameter stress test: initialization remains consequential
+{:.no_toc}
+
+Finally, take $$g(\theta;x)=\exp(\theta^\top x)$$ and
+$$x=\tanh(\Gamma^\top z)+c+v$$, with the same dimensions and Gaussian
+first-stage disturbances, $$\Gamma_{ij}\sim N(0,0.1^2)$$, and
+$$\varepsilon=0.25\mathbf1^\top c+0.1e$$.
+A separate pilot scales the fixed truth to target index variance 0.25.
+Use $$a=0.1,\eta=0.9,\kappa=0.6,\lambda=0.01,t_0=100$$.
+Near-zero initial values follow $$N(0,0.01I_4)$$; near-truth values follow
+$$N(\theta_*,0.025^2I_4)$$. Compare these two initializations,
+both in the radius-2 ball about zero; an idealized local diagnostic uses
+a radius-0.1 ball about the truth. That last region uses simulated truth
+and is not an implementable initialization strategy.
+
+For H01 at $$2^{20}$$, last-iterate MSE is **0.1119** from near zero and
+**0.0002589** from near the truth. The local-projection version gives
+**0.0002587**. H0123 near the truth gives **0.0007958**, so expansion is
+not uniformly beneficial here either. The local and near-truth runs are
+close because the small projection ball rarely activates.
+
+[![Exponential nonlinear model: all basis sets, three initialization/region choices, last and averaged iterates]({{ '/images/sieve-sgmm/exp-initialization.png' | relative_url }})]({{ '/images/sieve-sgmm/exp-initialization.svg' | relative_url }})
+
+*Exponential model, 64 repetitions. These are initialization and region
+diagnostics. The curvature-radius inequality has not been verified for
+these configurations, so the figure is not presented as a test of a global
+nonlinear convergence theorem.*
+
+This stress test illustrates why identification and local convergence
+conditions should not be collapsed into a global recovery claim.
+Differences in these finite trajectories alone do not establish their
+underlying global geometry. The calibrated scalar experiment tests the
+stated local conditions; this more complex example records what happens
+when those conditions have not been established.
+
+## 6. Scope and implications
 
 The two results give a sequence of checks for a streaming IV problem.
 First ask whether the selected moments detect every local parameter
@@ -865,6 +1096,8 @@ $$\sum_t\alpha_t=\infty$$, that limit is zero. $$\square$$
 6. Polyak, B. T., and Juditsky, A. B. (1992). [Acceleration of stochastic approximation by averaging][polyak]. *SIAM Journal on Control and Optimization*, **30**(4), 838–855. DOI: 10.1137/0330046.
 7. Robbins, H., and Siegmund, D. (1971). [A convergence theorem for non negative almost supermartingales and some applications][robbins-siegmund]. In J. S. Rustagi (Ed.), *Optimizing Methods in Statistics*, pp. 233–257. Academic Press. DOI: 10.1016/B978-0-12-604550-5.50015-8.
 
+8. Efron, B. (1979). [Bootstrap methods: Another look at the jackknife][efron]. *The Annals of Statistics*, **7**(1), 1–26. DOI: 10.1214/aos/1176344552.
+
 [hansen]: https://larspeterhansen.org/lph_research/large-sample-properties-of-generalized-method-of-moments-estimators/
 [identification]: https://doi.org/10.3982/ECTA9988
 [sgmm]: https://doi.org/10.1093/jjfinec/nbad027
@@ -872,3 +1105,5 @@ $$\sum_t\alpha_t=\infty$$, that limit is zero. $$\square$$
 [borkar]: https://doi.org/10.1016/S0167-6911(97)90015-3
 [polyak]: https://doi.org/10.1137/0330046
 [robbins-siegmund]: https://doi.org/10.1016/B978-0-12-604550-5.50015-8
+
+[efron]: https://doi.org/10.1214/aos/1176344552
