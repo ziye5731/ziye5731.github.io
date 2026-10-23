@@ -1,5 +1,5 @@
 ---
-title: "Sieve SGMM: Online IV Estimation through Basis Moments"
+title: "Streaming Sieve GMM for Nonlinear Instrumental Variable Regression"
 date: 2026-10-23
 permalink: /posts/2026/10/sieve-sgmm/
 excerpt: "A one-observation streaming method for nonlinear instrumental variable regression: how basis moments, a past Jacobian, and two time scales fit together."

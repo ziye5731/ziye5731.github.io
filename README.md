@@ -8,7 +8,7 @@ and the AcademicPages theme.
 - `_pages/about.md`: homepage.
 - `_pages/publications.md`: publications and preprints.
 - `_pages/notes.md` and `_pages/notes/`: study notes.
-- `_pages/blog.html` and `_posts/`: blog index and dated articles.
+- `_pages/blog.md` and `_posts/`: blog index and dated articles.
 - `_pages/miscellaneous.md`: music and other interests.
 - `_data/navigation.yml`: top navigation.
 - `images/` and `notes/`: images and downloadable notes.
