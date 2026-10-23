@@ -42,4 +42,6 @@ Visit [Misc]({{ '/misc/' | relative_url }}) to learn more.
 
 [Notes]({{ '/notes/' | relative_url }}) includes my notes and thoughts on various topics.
 
+[Blog]({{ '/blog/' | relative_url }}) contains longer posts on research, methods, and ideas.
+
 [Misc]({{ '/misc/' | relative_url }}) shares my life and interests beyond research.

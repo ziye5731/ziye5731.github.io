@@ -12,5 +12,5 @@ Feel free to reach out to me if you find any errors or have any suggestions rega
 - [Instrumental Variable Regression](/notes/Instrumental_Variable_Regression.pdf)
 - [Mirror Descent](/notes/Mirror_Descent.pdf)
   - [Probability Simplex Example (Jupyter Notebook)](/notes/probability_simplex.html)
-- [Quantities of Information](/notes/quantities-of-information)
+- [Quantities of Information](/notes/quantities-of-information/)
 - [Double Machine Learning](/notes/Double_Machine_Learning.pdf)

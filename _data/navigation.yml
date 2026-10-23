@@ -13,6 +13,9 @@ main:
 
   - title: "Notes"
     url: /notes/
+
+  - title: "Blog"
+    url: /blog/
   
   - title: "Misc"
     url: /misc/

@@ -12,7 +12,7 @@ site_theme               : "default" # The available themes options are "default
 title                    : "Ziye's Homepage"
 title_separator          : "-"
 name                     : &name "Ziye Zhang"
-description              : &description "Your Name's academic portfolio"   # Update this with a general description of your site, this is the default if not overridden by a page
+description              : &description "Ziye Zhang's research in statistics, optimization, and machine learning."
 url                      : https://ziye5731.github.io # The base hostname & protocol for your site e.g. "https://[your GitHub username].github.io",
                                                            # or if you already have some other page hosted on Github then use "https://[your GitHub username].github.io/[Your Repo Name]"
 baseurl                  : "" # the subpath of your site, e.g. "/blog"
@@ -95,7 +95,7 @@ publication_category:
 teaser                   :  # filename of teaser fallback teaser image placed in /images/ for social media previews
 breadcrumbs              : false # true, false (default)
 words_per_minute         : 160
-future                   : true
+future                   : false
 read_more                : "disabled" # if enabled, adds "Read more" links to excerpts
 talkmap_link             : false      #change to true to add link to talkmap on talks page
 comments:
@@ -173,6 +173,7 @@ exclude:
   - .github
   - .jekyll-assets-cache
   - .sass-cache
+  - .jekyll-cache
   - assets/js/_main.js
   - assets/js/plugins
   - assets/js/vendor
@@ -192,6 +193,32 @@ exclude:
   - README
   - tmp
   - vendor
+  # Development utilities and unused AcademicPages demonstration content.
+  - CONTRIBUTING.md
+  - Gemfile.lock
+  - README.md
+  - docker-compose.yaml
+  - run_local.sh
+  - scripts
+  - markdown_generator
+  - talkmap
+  - talkmap.py
+  - talkmap.ipynb
+  - talkmap_out.ipynb
+  - _portfolio
+  - _talks
+  - _teaching
+  - _pages/archive-layout-with-content.md
+  - _pages/collection-archive.html
+  - _pages/concerts.md
+  - _pages/cv.md
+  - _pages/cv-json.md
+  - _pages/non-menu-page.md
+  - _pages/portfolio.html
+  - _pages/talkmap.html
+  - _pages/talks.html
+  - _pages/teaching.html
+  - _pages/terms.md
 keep_files:
   - .git
   - .svn

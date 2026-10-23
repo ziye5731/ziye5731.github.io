@@ -1,0 +1,29 @@
+---
+layout: archive
+title: "Blog"
+permalink: /blog/
+author_profile: false
+---
+
+<p>Posts on research, methods, and ideas.</p>
+
+{% assign blog_posts = site.posts | where_exp: "post", "post.categories contains 'blog'" %}
+{% if blog_posts.size > 0 %}
+  {% for post in blog_posts %}
+    <div class="list__item">
+      <article class="archive__item" itemscope itemtype="http://schema.org/CreativeWork">
+        <h2 class="archive__item-title" itemprop="headline">
+          <a href="{{ post.url | relative_url }}" rel="permalink">{{ post.title | escape }}</a>
+        </h2>
+        <p class="page__meta">
+          <time datetime="{{ post.date | date_to_xmlschema }}">{{ post.date | date: "%B %d, %Y" }}</time>
+        </p>
+        {% if post.excerpt %}
+          <div class="archive__item-excerpt" itemprop="description">{{ post.excerpt | markdownify }}</div>
+        {% endif %}
+      </article>
+    </div>
+  {% endfor %}
+{% else %}
+  <p>New posts will appear here.</p>
+{% endif %}

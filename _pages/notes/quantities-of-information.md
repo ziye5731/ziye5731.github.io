@@ -1,7 +1,9 @@
 ---
 layout: archive
 title: "Quantities of Information"
-permalink: /notes/quantities-of-information
+permalink: /notes/quantities-of-information/
+redirect_from:
+  - /notes/quantities-of-information.html
 author_profile: false
 ---
 

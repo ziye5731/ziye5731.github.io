@@ -11,7 +11,9 @@ A list of all the posts and pages found on the site. For you robots out there, t
 
 <h2>Pages</h2>
 {% for post in site.pages %}
-  {% include archive-single.html %}
+  {% if post.title and post.sitemap != false and post.redirect_to == nil %}
+    {% include archive-single.html %}
+  {% endif %}
 {% endfor %}
 
 <h2>Posts</h2>
@@ -22,7 +24,7 @@ A list of all the posts and pages found on the site. For you robots out there, t
 {% capture written_label %}'None'{% endcapture %}
 
 {% for collection in site.collections %}
-{% unless collection.output == false or collection.label == "posts" %}
+{% unless collection.output == false or collection.label == "posts" or collection.docs.size == 0 %}
   {% capture label %}{{ collection.label }}{% endcapture %}
   {% if label != written_label %}
   <h2>{{ label }}</h2>
