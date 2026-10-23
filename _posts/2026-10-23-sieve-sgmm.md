@@ -2,7 +2,7 @@
 title: "Streaming Sieve GMM for Nonlinear Instrumental Variable Regression"
 date: 2026-10-23
 permalink: /posts/2026/10/sieve-sgmm/
-excerpt: "A one-observation streaming method for nonlinear instrumental variable regression: how basis moments, a past Jacobian, and two time scales fit together."
+excerpt: "One-observation streaming GMM for nonlinear IV regression, with explicit conditions for finite-basis identification and finite-time mean-square convergence."
 layout: single
 author_profile: false
 read_time: true
@@ -19,34 +19,37 @@ tags:
 ---
 
 <style>
-  /* Keep long equations scrollable within the article on narrow screens. */
   .page__content mjx-container[display="true"] {
     max-width: 100%;
     overflow-x: auto;
     overflow-y: hidden;
     padding: 0.25em 0;
   }
-  .page__content figure img { display: block; width: 100%; height: auto; }
-  .page__content figcaption { line-height: 1.55; }
 </style>
 
-**Research note.** This post organizes the current Sieve SGMM
-method from my RA work with Yifan Hu. It brings together the algorithm,
-basis-dependent identification, finite-time analysis, and existing simulation
-results. The convergence statements concern a fixed finite basis and include
-explicit conditions on the region visited by the iterates.
+An instrumental variable can be valid while a particular collection of
+instrument moments fails to identify the structural parameter. Even when
+those moments identify the parameter, a nonlinear online algorithm needs
+additional conditions to reach it. These are different requirements, and a
+streaming method should make both explicit.
 
-Instrumental variable regression has two problems to solve: use the
-instrument to separate structural signal from endogenous noise, and do so
-with an algorithm that can process a stream of observations. A good online
-optimizer cannot recover parameter directions that the chosen moments never
-see. Conversely, identifying moments do not automatically make a nonlinear
-iteration converge from an arbitrary starting point.
+This post develops **streaming sieve generalized method of moments
+(SSGMM)** for a correctly specified, finite-dimensional nonlinear IV model.
+A finite collection of instrument functions converts a conditional
+restriction into unconditional moments. A running Jacobian then supplies a
+damped Gauss–Newton direction using one new observation per update. The
+theory has two parts: a basis-dependent condition for regular local
+identification, and a finite-time mean-square convergence bound. The latter
+includes an $$O(T^{-1})$$ setting, with explicit restrictions on the step
+sizes, identification strength, and parameter region.
 
-Sieve SGMM, abbreviated **SSGMM**, connects these two questions. It replaces
-an infinite family of conditional moment restrictions with a finite set of
-instrument basis functions, then solves the resulting moments using a
-running Jacobian and one new observation per update.
+The construction combines the moment formulation of
+[Hansen (1982)][hansen], the nonlinear SGMM direction discussed by
+[Chen et al. (2025, Section 7)][sgmm], and two-time-scale stochastic
+approximation [Borkar (1997)][borkar]. The rank condition is classical;
+the analysis below expresses its consequences for the selected instrument
+basis and for this particular streaming recursion. All results keep the
+basis and parameter dimensions fixed as the stream grows.
 
 ## Contents
 {:.no_toc}
@@ -54,625 +57,818 @@ running Jacobian and one new observation per update.
 * TOC
 {:toc}
 
-## 1. From a conditional restriction to finite moments
+## 1. Model and finite-basis moments
 
-Consider i.i.d. observations $$D_t=(z_t,x_t,y_t)$$ satisfying
+### The conditional moment model
+{:.no_toc}
+
+Let $$D_t=(z_t,x_t,y_t)$$ be i.i.d. observations, with
+$$z\in\mathbb R^{d_z}$$, $$x\in\mathbb R^{d_x}$$, and
 
 $$
 y=g(\theta_*;x)+\varepsilon,
-\qquad \mathbb E[\varepsilon\mid z]=0,
-\qquad \theta_*\in\mathbb R^d.
+\qquad \theta_*\in\mathbb R^d,
+\qquad \mathbb E[\varepsilon\mid z]=0.
+\tag{1}
 $$
 
-The regressor $$x$$ may be correlated with $$\varepsilon$$, so minimizing
-ordinary prediction error need not recover $$\theta_*$$. The instrument gives
-us a different restriction: for every suitable function $$f$$,
+The known structural map $$g$$ can be nonlinear in both $$x$$ and
+$$\theta$$. Endogeneity is allowed: $$\mathbb E[\varepsilon\mid x]$$ need
+not be zero. The conditional mean restriction in (1) is the assumption we
+use; independence between the outcome and regressor conditional on the
+instrument is not required. Nor do we need to specify or estimate a
+first-stage regression for $$x$$ given $$z$$.
 
-$$
-\mathbb E\!\left[f(z)\{g(\theta_*;x)-y\}\right]=0.
-$$
-
-Instead of estimating a first-stage model or a conditional expectation,
-choose a finite vector of instrument functions
-$$\psi_{\mathcal K}(z)\in\mathbb R^{p_{\mathcal K}}$$ and define
+Choose a fixed vector of instrument functions
+$$\psi_{\mathcal K}(z)\in\mathbb R^{p_{\mathcal K}}$$. Define the sample
+moment, its sample Jacobian, and their expectations by
 
 $$
 \begin{aligned}
 m_{\mathcal K}(D,\theta)
   &=\psi_{\mathcal K}(z)\{g(\theta;x)-y\},\\
 M_{\mathcal K}(D,\theta)
-  &=\psi_{\mathcal K}(z)\nabla_\theta g(\theta;x)^\top.
+  &=\psi_{\mathcal K}(z)\nabla_\theta g(\theta;x)^\top,\\
+\bar m_{\mathcal K}(\theta)&=\mathbb E[m_{\mathcal K}(D,\theta)],
+&\quad \bar M_{\mathcal K}(\theta)&=\mathbb E[M_{\mathcal K}(D,\theta)].
 \end{aligned}
+\tag{2}
 $$
 
-Their expectations are $$\bar m_{\mathcal K}(\theta)$$ and
-$$\bar M_{\mathcal K}(\theta)$$. The first is a $$p_{\mathcal K}$$-vector and the
-second a $$p_{\mathcal K}\times d$$ matrix. We use the residual **$$g-y$$**
-throughout, so $$D_\theta\bar m_{\mathcal K}=\bar M_{\mathcal K}$$ and a descent
-step has a minus sign.
-
-The identity-weighted population GMM objective is
+We use the residual $$g-y$$ throughout. Validity of the instruments gives
+$$\bar m_{\mathcal K}(\theta_*)=0$$. Assuming differentiation can pass
+through expectation, $$D_\theta\bar m_{\mathcal K}=\bar M_{\mathcal K}$$.
+The identity-weighted population criterion is
 
 $$
-Q_{\mathcal K}(\theta)
- =\frac12\|\bar m_{\mathcal K}(\theta)\|^2,
+Q_{\mathcal K}(\theta)=\frac12\|\bar m_{\mathcal K}(\theta)\|^2,
 \qquad
 \nabla Q_{\mathcal K}(\theta)
  =\bar M_{\mathcal K}(\theta)^\top\bar m_{\mathcal K}(\theta).
+\tag{3}
 $$
 
-This is the squared norm of an **expected moment**. It differs from
-$$\frac12\mathbb E\|m_{\mathcal K}(D,\theta)\|^2$$, whose gradient contains
-same-observation products and generally targets a different objective.
+This criterion squares the **expected moment**. It is generally different
+from $$\mathbb E\|m_{\mathcal K}(D,\theta)\|^2/2$$: minimizing the latter
+need not recover $$\theta_*$$ under endogeneity. The distinction also
+explains why multiplying a current sample Jacobian by the current sample
+moment does not generally give an unbiased gradient of (3).
 
-### Why Hermite functions?
+### A normalized Hermite basis
+{:.no_toc}
 
-For standard Gaussian instruments, normalized multivariate Hermite
-polynomials give orthonormal coordinates:
-
-$$
-\mathbb E[\psi_{\mathcal K}(z)\psi_{\mathcal K}(z)^\top]=I.
-$$
-
-In one dimension, the first four degree blocks are
-
-$$
-\psi_0(z)=1,\quad \psi_1(z)=z,\quad
-\psi_2(z)=\frac{z^2-1}{\sqrt2},\quad
-\psi_3(z)=\frac{z^3-3z}{\sqrt6}.
-$$
-
-In several dimensions, degree two also contains $$z_i z_j$$ for $$i<j$$.
-Here $$\mathcal K$$ selects **degree blocks**, not individual coordinates.
-For example, $$\mathcal K=\{0,1,2\}$$ has
+For the basis interpretation, suppose the selected functions are
+orthonormal in $$L^2(P_z)$$:
+$$\mathbb E[\psi_{\mathcal K}(z)\psi_{\mathcal K}(z)^\top]=I$$.
+For $$z\sim N(0,I_{d_z})$$, one choice is the normalized tensor Hermite
+system. With multi-index $$\nu\in\mathbb N_0^{d_z}$$, let
 
 $$
-p_{\{0,1,2\}}=1+d_z+\frac{d_z(d_z+1)}2
+\psi_\nu(z)=\prod_{j=1}^{d_z}
+   \frac{\operatorname{He}_{\nu_j}(z_j)}{\sqrt{\nu_j!}},
+\qquad
+\mathcal I_{\mathcal K}
+   =\{\nu:|\nu|_1\in\mathcal K\}.
+\tag{4}
 $$
 
-scalar moments. This distinction matters for both rank and computational
-cost. Hermite orthonormality relies on the instrument distribution; it
-cannot be assumed for arbitrary unnormalized or non-Gaussian data.
-
-Orthonormality normalizes the basis, but it does not generally normalize
-the moment noise. At the truth,
+Here $$\mathcal K$$ is a set of **total-degree blocks**. Selecting degree
+two includes all squares and pairwise interactions. The first blocks are
 
 $$
-\Omega_{\mathcal K}
- =\mathbb E\!\left[
-   \psi_{\mathcal K}(z)\psi_{\mathcal K}(z)^\top\varepsilon^2
- \right].
+\psi_0(z)=1,\qquad
+\psi_1(z)=z,\qquad
+\psi_2(z)=\left(
+ \frac{z_j^2-1}{\sqrt2},\ z_jz_\ell:\ j<\ell
+\right)^\top.
+\tag{5}
 $$
 
-Only with additional conditions, such as constant conditional error
-variance, is this proportional to $$I$$. Identity weighting is a deliberate
-design choice here; efficiency of optimally weighted GMM does not follow
-from basis orthonormality alone.
-
-## 2. The online algorithm
-
-Fix the basis and suppress its subscript. Let $$S_t$$ track the population
-Jacobian and define the regularized gain
+Stack all features indexed by $$\mathcal I_{\mathcal K}$$ to obtain
+$$\psi_{\mathcal K}$$. The moment dimension is
 
 $$
-A_\lambda(S)=(S^\top S+\lambda I)^{-1}S^\top,
-\qquad \lambda>0.
+p_{\mathcal K}
+ =\sum_{k\in\mathcal K}\binom{d_z+k-1}{k}.
+\tag{6}
 $$
 
-After receiving one observation $$D_{t+1}$$, use
+For example, with eight instruments, degree sets $$\{1\}$$,
+$$\{0,1\}$$, $$\{0,1,2\}$$, and $$\{0,1,2,3\}$$ contain 8, 9, 45,
+and 165 moments. Degree zero is the unconditional residual restriction;
+it is present only when explicitly selected.
+
+Orthonormality normalizes the moment coordinates. It does not make the
+moment noise covariance the identity: at the truth that covariance is
+$$\mathbb E[\psi_{\mathcal K}\psi_{\mathcal K}^\top\varepsilon^2]$$.
+Thus identity weighting does not by itself imply efficient GMM. For
+non-Gaussian instruments, polynomial features remain usable, but the
+orthonormal projection formulas below require an orthonormalized system.
+The streaming rate argument itself only needs the specified moment and
+rank conditions.
+
+## 2. A predictable Jacobian gives a one-observation update
+
+Suppress $$\mathcal K$$ while holding the basis fixed. For ridge parameter
+$$\lambda>0$$, define
+
+$$
+A_\lambda(S)=(S^\top S+\lambda I_d)^{-1}S^\top,
+\qquad S\in\mathbb R^{p\times d}.
+\tag{7}
+$$
+
+Given deterministic initial states $$\theta_0\in\Theta$$ and finite
+$$S_0$$, use the recursion
 
 $$
 \begin{aligned}
-A_t &= A_\lambda(S_t),\\
 \theta_{t+1}
  &=\Pi_\Theta\!\left[
-      \theta_t-\alpha_{t+1}A_t m(D_{t+1},\theta_t)
+     \theta_t-\alpha_{t+1}A_\lambda(S_t)m(D_{t+1},\theta_t)
    \right],\\
 S_{t+1}
- &=(1-\beta_{t+1})S_t+
-      \beta_{t+1}M(D_{t+1},\theta_t),\\
+ &=(1-\beta_{t+1})S_t
+       +\beta_{t+1}M(D_{t+1},\theta_t),\\
 \bar\theta_T&=\frac1T\sum_{t=1}^T\theta_t.
 \end{aligned}
+\tag{8}
 $$
 
-The output is the Polyak–Ruppert average $$\bar\theta_T$$.
-$$\Pi_\Theta$$ is Euclidean projection onto a specified compact convex
-parameter set. The preconditioning design follows the nonlinear extension
-of [SGMM by Chen et al.](https://doi.org/10.1093/jjfinec/nbad027).
+The projection is Euclidean projection onto a deterministic compact convex
+set $$\Theta$$ containing $$\theta_*$$. Averaging the parameter iterates
+is standard in stochastic approximation
+[Polyak and Juditsky (1992)][polyak]; we report a rate for both the last
+iterate and this average below.
 
-The order of operations is essential. Both $$m$$ and $$M$$ use the same new
-observation and the same old parameter $$\theta_t$$, but the parameter step
-uses the **old state $$S_t$$**. The observation enters the Jacobian state only
-after that step. With $$\mathcal F_t$$ denoting the history,
+Each iteration reads one ordinary observation. Both sample quantities in
+(8) are evaluated at the **old parameter** $$\theta_t$$, and the parameter
+direction uses the **old Jacobian state** $$S_t$$. With
+$$\mathcal F_t=\sigma(D_1,\ldots,D_t)$$, this ordering gives
 
 $$
-\mathbb E[A_t m(D_{t+1},\theta_t)\mid\mathcal F_t]
-  =A_t\bar m(\theta_t).
+\mathbb E\!\left[
+ A_\lambda(S_t)m(D_{t+1},\theta_t)\mid\mathcal F_t
+\right]
+ =A_\lambda(S_t)\bar m(\theta_t).
+\tag{9}
 $$
 
-There is no need to split the stream into two independent batches. This
-conditional mean is still not generally $$\nabla Q(\theta_t)$$ or the exact
-population Gauss–Newton direction: the gain uses an estimated, changing
-Jacobian. Tracking that Jacobian is part of the analysis.
+The moment noise and Jacobian noise from the new observation can be
+correlated. Predictability of the gain is what permits (9); independent
+samples for the two updates are unnecessary. In contrast, putting the
+just-updated $$S_{t+1}$$ into the parameter direction generally invalidates
+this conditional-mean calculation. If $$S_0=0$$, the first parameter step
+is zero while the first observation initializes the Jacobian state.
 
-### Two time scales and a fixed ridge
-
-Use step sizes
+Use two time scales:
 
 $$
 \alpha_t=a(t+t_0)^{-\eta},\qquad
 \beta_t=b(t+t_0)^{-\kappa},\qquad
-\frac12<\kappa<\eta\le1.
+\frac12<\kappa<\eta\le1,
+\tag{10}
 $$
 
-Because $$\alpha_t/\beta_t\to0$$, the Jacobian moves on the faster time scale.
-It must adapt as the parameter moves. A simple cumulative average of all
-past Jacobians can adapt too slowly when $$g$$ is nonlinear in $$\theta$$.
+with $$a,b>0$$. Since $$\alpha_t/\beta_t\to0$$, the Jacobian adapts on
+the faster time scale. Equation (9) is not an unbiased population gradient
+or an exact population Gauss–Newton step: the state $$S_t$$ must learn the
+changing target $$\bar M(\theta_t)$$. Its tracking error is part of the
+convergence analysis.
 
-The ridge bounds the gain uniformly:
-
-$$
-\|A_\lambda(S)\|_{\mathrm{op}}\le\frac1{2\sqrt\lambda}.
-$$
-
-It regularizes the update, not the structural parameter. The method does
-not add a $$\lambda\|\theta\|^2$$ penalty to the moment objective, and
-$$\bar m(\theta_*)=0$$ remains a root. A fixed ridge nevertheless affects
-contraction and finite-time constants.
-
-For fixed $$p=p_{\mathcal K}$$, the persistent state uses $$O(pd+d)$$ storage.
-A direct implementation forms a $$d\times d$$ Gram matrix and solves a
-linear system each step, costing $$O(pd^2+d^3)$$ in addition to evaluating
-the model and basis. Streaming memory does not imply a negligible cost
-when many moments or parameters are used.
-
-## 3. What does the chosen basis identify?
-
-Define the conditional residual
+The ridge controls numerical amplification because
 
 $$
-b_\theta(z)=\mathbb E[g(\theta;x)-y\mid z].
+\|A_\lambda(S)\|_{\mathrm{op}}
+ \le\max_{s\ge0}\frac{s}{s^2+\lambda}
+ =\frac1{2\sqrt\lambda}.
+\tag{11}
 $$
 
-Let $$\Pi_{\mathcal K}$$ be projection in $$L^2(P_z)$$ onto the selected
-orthonormal basis. Then
+It damps the gain without adding a penalty to the moment equation, so
+$$\theta_*$$ remains a root. A fixed positive ridge does affect the
+contraction rate. The persistent state uses $$O(pd+d)$$ memory, independent
+of stream length; a direct dense implementation costs
+$$O(pd^2+d^3)$$ per update, apart from evaluating the features and model.
+Numerically, solve the system in (7) rather than forming an inverse.
+
+This observation model differs from a conditional two-sample oracle, which
+can draw independent regressors given the same instrument. Streaming IV
+methods built around such an oracle, including the two-sample algorithm of
+[Chen et al. (2024)][streaming-iv], provide useful context, but their
+assumptions and sample budgets must be distinguished from (8).
+
+## 3. Identification: which parameter directions do the moments see?
+
+Define the conditional residual and its derivative at the truth:
 
 $$
-Q_{\mathcal K}(\theta)
-  =\frac12\|\Pi_{\mathcal K}b_\theta\|_{L^2}^2.
+b_\theta(z)=\mathbb E[g(\theta;x)-y\mid z],
+\qquad
+a_*(z)=\mathbb E[\nabla_\theta g(\theta_*;x)\mid z].
+\tag{12}
 $$
 
-The finite moments see only the selected coordinates of the conditional
-residual. They identify $$\theta_*$$ globally on a parameter set exactly when
-every other parameter has a nonzero projected residual. Moment validity
-at the truth, by itself, says nothing about uniqueness.
+Assume these functions are square integrable and conditional
+differentiation is valid. Write $$\Pi_{\mathcal K}$$ for orthogonal
+projection onto the span of the selected instrument functions. Then
 
-### The weakest visible parameter direction
+$$
+\|\bar m_{\mathcal K}(\theta)\|^2
+ =\|\Pi_{\mathcal K}b_\theta\|_{L^2(P_z)}^2.
+\tag{13}
+$$
 
-The conditional sensitivity at the truth is
-$$a_*(z)=\mathbb E[\nabla_\theta g(\theta_*;x)\mid z]$$. Write
+The selected moments detect only the projected conditional residual.
+Consequently, **global identification on $$\Theta$$** is precisely the
+separation condition
+
+$$
+\Pi_{\mathcal K}b_\theta\ne0
+\quad\text{for every }\theta\in\Theta\setminus\{\theta_*\}.
+\tag{14}
+$$
+
+Instrument validity guarantees a zero at the truth; it does not guarantee
+(14). For local analysis, define
 
 $$
 \begin{aligned}
-C_k&=\mathbb E[\psi_k(z)a_*(z)^\top],\\
-G_{\mathcal K}&=\bar M_{\mathcal K}(\theta_*),\\
-J_{\mathcal K}&=G_{\mathcal K}^\top G_{\mathcal K}
-            =\sum_{k\in\mathcal K}C_k^\top C_k,\\
-\mu_{\mathcal K}&=\lambda_{\min}(J_{\mathcal K}).
+G_{\mathcal K}&=\bar M_{\mathcal K}(\theta_*),
+&J_{\mathcal K}&=G_{\mathcal K}^\top G_{\mathcal K},\\
+\mu_{\mathcal K}&=\lambda_{\min}(J_{\mathcal K})
+ =\inf_{\|v\|=1}
+   \|\Pi_{\mathcal K}[a_*^\top v]\|_{L^2(P_z)}^2.
 \end{aligned}
+\tag{15}
 $$
 
-Equivalently,
+The number $$\mu_{\mathcal K}$$ measures signal in the least visible
+parameter direction. A large number of moments is useful only if they
+collectively capture every such direction.
 
-$$
-\mu_{\mathcal K}
- =\inf_{\|v\|=1}\|\Pi_{\mathcal K}[a_*^\top v]\|_{L^2}^2.
-$$
+### Result 1: regular local identification
+{:.no_toc}
 
-Thus $$\mu_{\mathcal K}$$ is the signal in the least visible parameter
-direction. If it is positive and $$\bar M_{\mathcal K}$$ is locally
-$$L_{\mathcal K}$$-Lipschitz, Taylor expansion gives
+Suppose $$\bar M_{\mathcal K}$$ is
+$$L_{\mathcal K}$$-Lipschitz in Frobenius norm on a neighborhood of
+$$\theta_*$$. If $$\mu_{\mathcal K}>0$$, the selected moments locally
+identify $$\theta_*$$. More quantitatively, for any displacement $$e$$
+whose connecting segment remains in that neighborhood,
 
 $$
 \|\bar m_{\mathcal K}(\theta_*+e)\|
  \ge\sqrt{\mu_{\mathcal K}}\|e\|
        -\frac{L_{\mathcal K}}2\|e\|^2.
+\tag{16}
 $$
 
-This yields regular local identification. The full-column-rank principle
-is classical; see [Chen, Chernozhukov, Lee, and Newey
-(2014)](https://doi.org/10.3982/ECTA9988). Having $$p_{\mathcal K}\ge d$$ is
-necessary for full column rank, but does not ensure it. Rank deficiency
-can sometimes permit higher-order identification, which the regular
-convergence results below do not cover.
+**Proof.** The integral Taylor formula gives
+$$\bar m_{\mathcal K}(\theta_*+e)=G_{\mathcal K}e+R(e)$$, with
+$$\|R(e)\|\le L_{\mathcal K}\|e\|^2/2$$. Since
+$$\|G_{\mathcal K}e\|\ge\sqrt{\mu_{\mathcal K}}\|e\|$$, the triangle
+inequality gives (16). Its right-hand side is positive for small nonzero
+$$e$$. If the population moment is affine in $$\theta$$, the remainder
+vanishes, and full column rank gives global identification on the parameter
+set. $$\square$$
 
-For a complete orthonormal system, define
-$$J_\infty=\mathbb E[a_*a_*^\top]$$. If $$J_\infty\succ0$$, then
+This is the familiar full-column-rank sufficient condition for regular
+local identification; see [Chen et al. (2014, Section 2.1)][identification].
+The dimension requirement $$p_{\mathcal K}\ge d$$ is necessary for this
+rank condition, but is not sufficient. Conversely, rank deficiency does
+not rule out identification through higher-order terms. Such singular
+identification is outside the regular rate analysis in Section 4.
+
+### A basis can miss signal even in one dimension
+{:.no_toc}
+
+Consider a scalar regressor with
+$$x=\gamma(z^2-1)+u$$, $$z\sim N(0,1)$$, and structural map
+$$g(\theta;x)=\sin(\theta x)$$ at $$\theta_*=0$$. Let centered jointly
+Gaussian $$(u,\varepsilon)$$ be independent of $$z$$, with
+$$\operatorname{Cov}(u,\varepsilon)\ne0$$. The instrument is valid while
+the regressor is endogenous. Here
+
+$$
+a_*(z)=\gamma(z^2-1),\qquad
+G_{\{1\}}=0,\qquad
+G_{\{2\}}=\sqrt2\gamma,
+\qquad \mu_{\{2\}}=2\gamma^2.
+\tag{17}
+$$
+
+In fact, the degree-one moment is zero for every parameter: the joint law
+is invariant under $$z\mapsto-z$$, while that instrument is odd. Degree
+two supplies regular local identification whenever $$\gamma\ne0$$.
+This is a failure of the chosen moment set, despite having
+$$p_{\{1\}}=d=1$$.
+
+### Local rank does not establish global uniqueness
+{:.no_toc}
+
+For a separate example, take $$x=z+u$$ with independent standard Gaussian
+$$z,u$$, and let
+$$g(\theta;x)=\theta x+\theta^2(x^2-2)$$. Under a valid structural error,
+
+$$
+b_\theta(z)
+ = (\theta-\theta_*)z
+   +(\theta^2-\theta_*^2)(z^2-1).
+\tag{18}
+$$
+
+If $$\theta_*\ne0$$, the degree-two moment has a nonzero derivative at the
+truth, yet it also vanishes at $$-\theta_*$$. A parameter set containing
+both values is therefore not globally identified by degree two alone.
+Adding degree one separates the two roots. A local rank calculation and a
+global separation argument answer different questions.
+
+### What enlarging the basis can guarantee
+{:.no_toc}
+
+For orthonormal degree blocks, write
+$$C_k=\mathbb E[\psi_k(z)a_*(z)^\top]$$. Then
+
+$$
+J_{\mathcal K}=\sum_{k\in\mathcal K}C_k^\top C_k.
+\tag{19}
+$$
+
+Nested basis expansions increase $$J_{\mathcal K}$$ in positive
+semidefinite order. If the full orthonormal system is complete and
+$$J_\infty=\mathbb E[a_*a_*^\top]\succ0$$, orthogonal decomposition gives
 
 $$
 \mu_{\mathcal K}
- \ge\lambda_{\min}(J_\infty)
+ \ge \lambda_{\min}(J_\infty)
        -\mathbb E\|a_*-\Pi_{\mathcal K}a_*\|^2.
+\tag{20}
 $$
 
-A finite basis therefore suffices for regular local identification once
-its sensitivity approximation error is small enough. This is an
-existence criterion; a useful numerical degree cutoff requires a bound
-for the particular model.
+Indeed, $$J_\infty-J_{\mathcal K}$$ is the second-moment matrix of the
+omitted sensitivity, whose operator norm is bounded by its squared
+$$L^2$$ norm. Thus some finite initial segment gives regular local
+identification. Completeness is a way to obtain a sufficiently rich finite
+basis; it is not a requirement that every valid application use infinitely
+many moments.
 
-### Example: linear instruments miss an even first stage
+## 4. Convergence rates: identification, curvature, and tracking
 
-Take $$g(\theta;x)=\sin(\theta x)$$, $$\theta_*=0$$, and
+Identification concerns the zeros of the population moments. Convergence
+also depends on the geometry of the update and the region visited by the
+iterates. The following conditions make that distinction explicit.
 
-$$
-x=\gamma_*(z^2-1)+u,\qquad z\sim N(0,1),\qquad\gamma_*\ne0,
-$$
+### Assumptions and the admissible region
+{:.no_toc}
 
-where $$(u,\varepsilon)$$ is jointly centered Gaussian and independent of
-$$z$$. The two noises may be correlated. Because the conditional law of
-$$x$$ is unchanged by $$z\mapsto-z$$,
+Fix the basis. Vector norms below are Euclidean, and matrix norms are
+Frobenius unless marked $$\mathrm{op}$$. In addition to the i.i.d. model
+and differentiability in Section 1, assume:
 
-$$
-\bar m_{\{1\}}(\theta)=\mathbb E[z\sin(\theta x)]=0
-\quad\text{for every }\theta.
-$$
+1. **A fixed compact region.** $$\Theta$$ is deterministic, compact, and
+   convex, contains $$\theta_*$$, and contains the deterministic
+   initialization $$\theta_0$$. The initial Jacobian state $$S_0$$ is
+   finite. The algorithm uses the projection in (8).
+2. **Population smoothness.** On $$\Theta$$,
+   $$D_\theta\bar m=\bar M$$ and
+   $$\|\bar M(\theta)-\bar M(\theta')\|_F\le L\|\theta-\theta'\|$$.
+3. **Uniform fourth moments.** The constants
 
-No amount of optimization with the degree-one moment can distinguish
-these parameters. The degree-two instrument instead gives
+   $$
+   \sigma_m^4=\sup_{\theta\in\Theta}\mathbb E\|m(D,\theta)\|^4,
+   \qquad
+   \sigma_M^4=\sup_{\theta\in\Theta}
+      \mathbb E\|M(D,\theta)-\bar M(\theta)\|_F^4
+   \tag{21}
+   $$
 
-$$
-G_{\{2\}}=\mathbb E\!\left[\frac{z^2-1}{\sqrt2}x\right]
- =\sqrt2\gamma_*,\qquad \mu_{\{2\}}=2\gamma_*^2>0.
-$$
+   are finite.
+4. **Regular identification and controlled curvature.** With
+   $$G=\bar M(\theta_*)$$ and $$\mu=\lambda_{\min}(G^\top G)>0$$, set
 
-The quadratic moment recovers local sensitivity that the linear moment
-misses. This example does not assert global uniqueness of the sine model.
+   $$
+   h=\frac{\mu}{\mu+\lambda},\qquad
+   \ell_\lambda=\frac{5}{4\lambda},\qquad
+   c=L\!\left(\ell_\lambda\|G\|_{\mathrm{op}}
+                +\frac1{4\sqrt\lambda}\right).
+   \tag{22}
+   $$
 
-### Example: full local rank can leave two roots
+   Require $$\Theta\subseteq B(\theta_*,r)$$ with
+   $$rc\le h/4$$. If $$L=0$$, this radius restriction is vacuous.
+5. **Separated step sizes.** Use (10), with $$t_0\ge1$$ sufficiently large
+   that $$0<\beta_t\le1$$ and $$h\alpha_t\le1$$ for every update.
 
-Now let $$x=z+u$$, with the same distributional assumptions, and put
-$$c_x=\mathbb E[x^2]$$. Consider
+The local region is a substantive assumption. A large projection ball
+centered at zero need not meet it, and the theorem does not provide an
+algorithm for locating a neighborhood of the unknown truth. For an
+unprojected implementation, the same conclusions require a separate proof
+that all iterates stay in the specified region almost surely. A
+population rank condition alone does not supply this stability property.
 
-$$
-g(\theta;x)=\theta x+\theta^2(x^2-c_x).
-$$
+### Result 2: finite-time mean-square convergence
+{:.no_toc}
 
-The conditional residual is
-
-$$
-b_\theta(z)=(\theta-\theta_*)z
-             +(\theta^2-\theta_*^2)(z^2-1).
-$$
-
-Degree two alone gives
-$$\bar m_{\{2\}}(\theta)=\sqrt2(\theta^2-\theta_*^2)$$. For
-$$\theta_*\ne0$$, its derivative at the truth is nonzero, yet both
-$$\theta_*$$ and $$-\theta_*$$ solve the moment. Degree one gives
-$$\bar m_{\{1\}}(\theta)=\theta-\theta_*$$ and resolves the ambiguity.
-The relevant question is which parameter directions a basis captures,
-rather than its highest degree.
-
-### Quadratic regression and missing coefficient directions
-
-For the structural model $$g=b^\top x+x^\top A x$$, take $$A$$ symmetric and
-$$x=\Gamma^\top z+u$$, where $$z$$ is standard Gaussian, $$u$$ is independent
-with mean zero and covariance $$I$$, and $$\Gamma$$ has full column rank.
-For parameter changes $$(\Delta_b,\Delta_A)$$,
-
-$$
-b_\theta(z)=\Delta_b^\top\Gamma^\top z
- +z^\top\Gamma\Delta_A\Gamma^\top z+\operatorname{tr}(\Delta_A).
-$$
-
-Degree one identifies $$b$$, while adding the constant supplies only one
-weighted trace of $$A$$. Degrees $$\{1,2\}$$ identify all coefficients: degree
-two determines $$\Gamma\Delta_A\Gamma^\top$$, and full column rank of
-$$\Gamma$$ determines $$\Delta_A$$. Blocks of degree three or higher have
-zero local sensitivity in this setting.
-
-Although this regression is nonlinear in $$x$$, it is **linear in the
-unknown coefficients $$(b,A)$$**. That distinction changes the convergence
-analysis.
-
-## 4. What convergence rate is justified?
-
-The October 20 research note establishes sufficient finite-time bounds
-for a fixed identifying basis. For nonlinear parameterizations, the
-conditions include all of the following:
-
-- A deterministic compact convex set $$\Theta$$ containing $$\theta_*$$,
-  with initialization and all iterates in that set.
-- A Lipschitz population Jacobian and uniform fourth-moment bounds for
-  the sampled moment and centered sampled Jacobian on $$\Theta$$.
-- Positive signal $$\mu_{\mathcal K}>0$$ and a small enough local region
-  for the population update to point toward $$\theta_*$$.
-- The two step-size schedules above, with an offset large enough to
-  keep the early steps within the theorem's bounds.
-
-For specificity, define
+Under these assumptions, define
 
 $$
-\begin{aligned}
-h_{\mathcal K}&=\frac{\mu_{\mathcal K}}{\mu_{\mathcal K}+\lambda},
-&\ell_\lambda&=\frac5{4\lambda},\\
-c_{\mathcal K}&=L_{\mathcal K}
- \left(\ell_\lambda\|G_{\mathcal K}\|_{\mathrm{op}}
-           +\frac1{4\sqrt\lambda}\right).
-\end{aligned}
+\rho=\min\{\eta,\ 2\kappa,\ 4(\eta-\kappa)\}>0.
+\tag{23}
 $$
 
-A sufficient region condition is
-$$\Theta\subseteq B(\theta_*,r_{\mathcal K})$$ with
-$$r_{\mathcal K}c_{\mathcal K}\le h_{\mathcal K}/4$$.
-Projection enforces membership in a chosen set; it does not construct
-this local set or locate the unknown truth. A large ball around zero
-does not automatically satisfy this condition.
+If $$\eta<1$$, then
 
-### General power schedules
+$$
+\mathbb E\|\theta_T-\theta_*\|^2=O(T^{-\rho}),
+\qquad
+\mathbb E\|\bar\theta_T-\theta_*\|^2=O(T^{-\rho}).
+\tag{24}
+$$
+
+If $$\eta=1$$, put $$\gamma=ah$$. For both the last iterate and its
+average, the mean-square error is bounded by
+
+$$
+\begin{cases}
+O(T^{-\rho}),&\gamma>\rho,\\
+O(T^{-\rho}\log T),&\gamma=\rho,\\
+O(T^{-\gamma}),&\gamma<\rho.
+\end{cases}
+\tag{25}
+$$
+
+All implied constants can depend on the fixed basis, the parameter region,
+noise moments, ridge, initialization, and step-size coefficients; they do
+not depend on $$T$$. If $$\eta+\rho>1$$, the last iterate also converges to
+$$\theta_*$$ almost surely. The proof is given in the appendix.
+
+A useful specialization is
+
+$$
+\alpha_t=\frac{a}{t+t_0},\qquad
+\beta_t=\frac{b}{(t+t_0)^{2/3}},\qquad
+ah>1.
+\tag{26}
+$$
+
+Then there is a finite constant $$C_{\mathcal K}$$ such that
+
+$$
+\mathbb E\|\theta_T-\theta_*\|^2
+ \le\frac{C_{\mathcal K}}{T+t_0},
+\qquad
+\mathbb E\|\bar\theta_T-\theta_*\|^2
+ \le\frac{4C_{\mathcal K}}{T}.
+\tag{27}
+$$
+
+Thus the root-mean-square parameter error is $$O(T^{-1/2})$$. The
+statement is about expectations over repeated streams. It is not a
+pointwise guarantee for every trajectory, nor a claim of asymptotic
+normality or efficient covariance. In this proof, averaging preserves the
+rate order; it is not used to establish an efficiency improvement.
+
+### Why the exponent has three terms
+{:.no_toc}
+
+Let $$\delta_t=S_t-\bar M(\theta_t)$$. The analysis bounds its fourth
+moment as
+
+$$
+\mathbb E\|\delta_t\|_F^4
+ =O\!\left((t+t_0)^{-2\kappa}
+            +(t+t_0)^{-4(\eta-\kappa)}\right).
+\tag{28}
+$$
+
+The first term is Jacobian-estimation noise; the second is lag from
+tracking a Jacobian that moves with the parameter. The direct parameter
+noise contributes the $$\eta$$ term in (23). Controlling the chance of a
+large tracking error combines these three contributions into (24)–(25).
+These are sufficient upper bounds, and need not equal the sharp exponent
+observed in a particular model.
+
+When the structural model is linear in its parameters,
+$$g(\theta;x)=q(x)^\top\theta$$, the population Jacobian is constant.
+Then $$L=0$$, the moving-target term disappears, and for $$\eta<1$$ the
+bound improves to $$O(T^{-\eta})$$ for both estimators. This conclusion
+holds on the chosen compact region without the local radius restriction.
+A function quadratic or otherwise nonlinear in $$x$$ can still belong
+to this simpler case; nonlinearity in the regressors and nonlinearity in
+the estimated parameters must be distinguished.
+
+For genuinely nonlinear parameters, $$\eta=0.7,\kappa=0.6$$ gives the
+conservative exponent $$\rho=0.4$$, while
+$$\eta=0.9,\kappa=0.6$$ gives $$\rho=0.9$$. More generally, for
+$$2/3<\eta<1$$, taking $$1/2<\kappa\le3\eta/4$$ yields $$\rho=\eta$$.
+The harmonic setting (26) yields $$1/T$$; any
+$$1/2<\kappa\le3/4$$ gives the same order if $$ah>1$$.
+
+### How the basis affects the rate guarantee
+{:.no_toc}
+
+The identification strength from Result 1 reappears in the contraction
+factor $$h=\mu/(\mu+\lambda)$$. For a fixed harmonic coefficient $$a$$,
+the sufficient condition for (27) is
+
+$$
+ah>1
+\quad\Longleftrightarrow\quad
+a>1\ \text{ and }\ \mu>\frac{\lambda}{a-1}.
+\tag{29}
+$$
+
+A basis can therefore identify the parameter while having too little
+signal to satisfy this particular $$1/T$$ guarantee with the chosen
+coefficient. Adjusting $$a$$ to restore $$ah>1$$ changes the step-size
+constants and can lengthen the transient; it is not a cost-free remedy.
+
+Adding basis blocks can increase $$\mu$$, but can also increase the
+fourth moments in (21) and the curvature constant. If an added block has
+$$C_k=0$$, it supplies no additional first-order signal. At the population
+level,
+
+$$
+A_\lambda\!\left(\begin{bmatrix}G\\0\end{bmatrix}\right)
+ =\begin{bmatrix}A_\lambda(G)&0\end{bmatrix},
+\tag{30}
+$$
+
+whereas its estimated rows fluctuate at finite sample sizes. The theory
+therefore supports checking signal, curvature, and noise together. It
+does not imply that a larger basis always improves estimation.
+
+## 5. Scope and implications
+
+The two results give a sequence of checks for a streaming IV problem.
+First ask whether the selected moments detect every local parameter
+direction, using $$\mu_{\mathcal K}$$. If global recovery is required,
+check separation on the whole parameter set as well. Then establish that
+the algorithm remains in a region where its mean direction contracts, and
+choose step sizes that account for Jacobian tracking.
+
+This distinction matters even with globally identifying moments. For
+example, the deterministic scalar moment $$\bar m(\theta)=\theta^3-1$$
+has a unique root at one. Nevertheless, starting (8) at
+$$\theta_0=0,S_0=0$$ leaves both states unchanged, because the sample
+Jacobian there is zero. Global identification alone cannot rule out
+stationary points of the iteration.
+
+The analysis concerns a correctly specified finite-dimensional structural
+model, i.i.d. data, and a fixed basis chosen before the stream. Once that
+basis identifies $$\theta_*$$, finite truncation creates no automatic
+approximation bias in the parameter. Growing or adaptively selected
+bases, structural misspecification, dependent observations, and singular
+identification require additional analysis. None of the bounds above
+establishes those extensions or global nonlinear convergence from an
+arbitrary initialization.
+
+## Appendix: proof of the rate result
+
+The proof below makes the tracking and stability requirements explicit.
+All constants are finite and independent of time; their values may depend
+on the fixed basis. Write $$n_t=t+t_0$$ and
+$$u_t=\mathbb E\|\theta_t-\theta_*\|^2$$.
+
+### A. Gain regularity and local contraction
+{:.no_toc}
+
+Besides (11), the damped gain is globally Lipschitz:
+
+$$
+\|A_\lambda(S)-A_\lambda(T)\|_{\mathrm{op}}
+ \le\ell_\lambda\|S-T\|_F,
+\qquad \ell_\lambda=\frac5{4\lambda}.
+\tag{31}
+$$
+
+To verify this, set $$P=(S^\top S+\lambda I)^{-1}$$. Differentiation gives
+
+$$
+DA_\lambda(S)[E]
+ =PE^\top(I-SA_\lambda(S))-A_\lambda(S)EA_\lambda(S).
+\tag{32}
+$$
+
+Use $$\|P\|_{\mathrm{op}}\le1/\lambda$$,
+$$\|I-SA_\lambda(S)\|_{\mathrm{op}}\le1$$, and (11), then integrate
+along the line segment between the two matrices.
+
+Let $$e=\theta-\theta_*$$ and $$H=A_\lambda(G)G$$. Its eigenvalues are
+$$s^2/(s^2+\lambda)$$, so $$H\succeq hI$$. Taylor expansion and (31)
+yield
+
+$$
+\|A_\lambda(\bar M(\theta))\bar m(\theta)-He\|
+ \le c\|e\|^2.
+\tag{33}
+$$
+
+The radius condition $$rc\le h/4$$ therefore gives the drift inequality
+
+$$
+e^\top A_\lambda(\bar M(\theta))\bar m(\theta)
+ \ge\frac{3h}{4}\|e\|^2
+\qquad\text{on }\Theta.
+\tag{34}
+$$
+
+### B. Tracking the moving Jacobian
+{:.no_toc}
+
+Define
+$$\xi_i=M(D_i,\theta_{i-1})-\bar M(\theta_{i-1})$$. These are
+martingale differences with conditional fourth moments bounded by
+$$\sigma_M^4$$. The state error satisfies
+
+$$
+\delta_t=(1-\beta_t)\delta_{t-1}+\beta_t\xi_t
+       +\bar M(\theta_{t-1})-\bar M(\theta_t).
+\tag{35}
+$$
+
+Let
+$$\pi_{i,t}=\prod_{j=i+1}^t(1-\beta_j)$$ and
+$$\omega_{i,t}=\beta_i\pi_{i,t}$$, with an empty product equal to one.
+Unrolling (35) separates initialization, sample noise, and target motion:
+
+$$
+\delta_t=\pi_{0,t}\delta_0
+ +\sum_{i=1}^t\omega_{i,t}\xi_i
+ +\sum_{i=1}^t\pi_{i,t}
+    \{\bar M(\theta_{i-1})-\bar M(\theta_i)\}.
+\tag{36}
+$$
+
+Conditional expansion of the fourth power gives
+$$\mathbb E\|\sum_i\omega_{i,t}\xi_i\|_F^4
+\le 8\sigma_M^4(\sum_i\omega_{i,t}^2)^2$$.
+For example, write $$Q_{i-1}=\sum_{j<i}w_j^2$$ for deterministic
+weights. Martingale orthogonality bounds the partial sum's second moment
+by $$\sigma_M^2 Q_{i-1}$$; the increment in its fourth moment is at
+most $$\sigma_M^4(6w_i^2Q_{i-1}+4|w_i|^3\sqrt{Q_{i-1}}+w_i^4)$$.
+Summing these terms bounds them by eight times
+$$\sigma_M^4(\sum_iw_i^2)^2$$.
+For the last term, projection is nonexpansive and fixes
+$$\theta_{i-1}$$, so (11) implies
+
+$$
+\bigl(\mathbb E\|\theta_i-\theta_{i-1}\|^4\bigr)^{1/4}
+ \le\frac{\alpha_i\sigma_m}{2\sqrt\lambda}.
+\tag{37}
+$$
+
+Combining smoothness with Minkowski's inequality yields
+
+$$
+\mathbb E\|\delta_t\|_F^4
+ \le C\!\left[
+    \pi_{0,t}^4\|\delta_0\|_F^4
+    +\sigma_M^4 W_t^2
+    +\left(\frac{L\sigma_m}{2\sqrt\lambda}\right)^4 U_t^4
+  \right]=:\mathcal R_t,
+\tag{38}
+$$
+
+where $$W_t=\sum_i\omega_{i,t}^2$$ and
+$$U_t=\sum_i\alpha_i\pi_{i,t}$$. The scalar recursions
+
+$$
+W_t=(1-\beta_t)^2W_{t-1}+\beta_t^2,
+\qquad
+U_t=(1-\beta_t)U_{t-1}+\alpha_t
+\tag{39}
+$$
+
+give $$W_t=O(\beta_t)$$ and
+$$U_t=O(\alpha_t/\beta_t)$$. One can verify these bounds by induction:
+the comparison sequences change by a relative $$O(1/t)$$, while
+$$1/t=o(\beta_t)$$. Initialization decays faster than any power because
+$$\pi_{0,t}\le\exp(-\sum_{j=1}^t\beta_j)$$. This proves (28). The
+argument never assumes independence between sample noise and target
+motion. If $$L=0$$, the last term of (38) is exactly zero.
+
+### C. From tracking to parameter error
+{:.no_toc}
 
 Set
 
 $$
-\rho=\min\{\eta,\;2\kappa,\;4(\eta-\kappa)\}.
+B=\|G\|_{\mathrm{op}}+Lr,\qquad
+q=\frac{h}{4\ell_\lambda B},\qquad
+\mathcal B_t=\{\|\delta_t\|_F>q\}.
+\tag{40}
 $$
 
-Under the stated assumptions, when $$\eta<1$$,
+Smoothness gives $$\|\bar m(\theta)\|\le B\|\theta-\theta_*\|$$.
+Equations (31) and (34) then imply
+$$e_t^\top A_\lambda(S_t)\bar m(\theta_t)\ge h\|e_t\|^2/2$$ on
+$$\mathcal B_t^c$$. On $$\mathcal B_t$$, boundedness of the region and
+gain gives the uniform replacement
 
 $$
-\mathbb E\|\theta_T-\theta_*\|^2=O(T^{-\rho}).
+2e_t^\top A_\lambda(S_t)\bar m(\theta_t)
+ \ge h\|e_t\|^2-w\mathbf1_{\mathcal B_t},
+\qquad w=r^2(h+B/\sqrt\lambda).
+\tag{41}
 $$
 
-When $$\eta=1$$, write $$\gamma_{\mathcal K}=a h_{\mathcal K}$$. The bound is
+Expand the squared projected parameter update and take conditional
+expectations using (9). With $$v=\sigma_m^2/(4\lambda)$$,
 
 $$
-\mathbb E\|\theta_T-\theta_*\|^2=
-\begin{cases}
-O(T^{-\rho}),&\gamma_{\mathcal K}>\rho,\\
-O(T^{-\rho}\log T),&\gamma_{\mathcal K}=\rho,\\
-O(T^{-\gamma_{\mathcal K}}),&\gamma_{\mathcal K}<\rho.
-\end{cases}
+\mathbb E[\|e_{t+1}\|^2\mid\mathcal F_t]
+ \le(1-h\alpha_{t+1})\|e_t\|^2
+     +v\alpha_{t+1}^2
+     +w\alpha_{t+1}\mathbf1_{\mathcal B_t}.
+\tag{42}
 $$
 
-The averaged estimator has the same guaranteed orders. If
-$$\eta+\rho>1$$, the iterates also converge almost surely.
-All constants may depend on the fixed basis and the chosen region.
-
-A convenient setting is
+Markov's inequality bounds
+$$\Pr(\mathcal B_t)\le\mathcal R_t/q^4$$. Consequently,
 
 $$
-\alpha_t=\frac a{t+t_0},\qquad
-\beta_t=\frac b{(t+t_0)^{2/3}},\qquad a h_{\mathcal K}>1.
+u_{t+1}\le(1-h\alpha_{t+1})u_t
+       +v\alpha_{t+1}^2
+       +\frac{w}{q^4}\alpha_{t+1}\mathcal R_t.
+\tag{43}
 $$
 
-It gives $$O(1/T)$$ **mean-square parameter error** for both the last
-iterate and its average. The corresponding root-mean-square error is
-$$O(T^{-1/2})$$. This statement does not establish asymptotic efficiency
-or a central limit theorem.
-
-If the same harmonic coefficient $$a$$ and ridge $$\lambda$$ are used across
-bases, the sufficient $$1/T$$ condition becomes
+This is also an explicit finite-time bound: with
+$$P_{i,T}=\prod_{j=i+1}^T(1-h\alpha_j)$$,
 
 $$
-a>1\quad\text{and}\quad
-\mu_{\mathcal K}>\frac\lambda{a-1}.
+u_T\le P_{0,T}u_0+
+ \sum_{i=1}^T P_{i,T}
+   \left[v\alpha_i^2+
+         \frac{w}{q^4}\alpha_i\mathcal R_{i-1}\right].
+\tag{44}
 $$
 
-An identifying but weak basis can therefore have a slower guaranteed
-rate with the same coefficient. Adjusting $$a$$ separately to make
-$$a h_{\mathcal K}>1$$ gives the same $$1/T$$ power across identifying bases,
-while leaving different constants and admissible regions.
+Its constants expose the dependence on identification strength, curvature,
+moment noise, and initialization. In particular, the result is not uniform
+over a sequence of increasingly weakly identified bases.
 
-### Where the three exponents come from
+### D. Solving the recursion and averaging
+{:.no_toc}
 
-The key tracking error is
-$$\delta_t=S_t-\bar M(\theta_t)$$. The proof obtains
-
-$$
-\mathbb E\|\delta_t\|_F^4
- =O\!\left(t^{-2\kappa}+t^{-4(\eta-\kappa)}\right).
-$$
-
-The first term comes from sampling the Jacobian. The second comes from
-following a moving population Jacobian. Controlling the probability of a
-large tracking error leads to a parameter-error recursion of the form
+The forcing term in (43) is $$O(n_{t+1}^{-\eta-\rho})$$.
+For $$\eta<1$$, comparison with a sufficiently large multiple of
+$$n_t^{-\rho}$$ proves (24), since its relative decrease is
+$$O(1/t)=o(\alpha_t)$$. For $$\eta=1$$,
 
 $$
-u_{t+1}\le(1-h_{\mathcal K}\alpha_{t+1})u_t
-  +C_1\alpha_{t+1}^2
-  +C_2\alpha_{t+1}\mathbb E\|\delta_t\|_F^4,
-\qquad u_t=\mathbb E\|\theta_t-\theta_*\|^2.
+P_{i,T}\le C\left(\frac{i+t_0}{T+t_0}\right)^{ah}.
+\tag{45}
 $$
 
-Parameter noise, Jacobian noise, and tracking lag produce the three terms
-in $$\rho$$. The argument does not assume that the two updates use
-independent observations.
-
-For example, $$(\eta,\kappa)=(0.7,0.6)$$ yields the conservative nonlinear
-bound $$O(T^{-0.4})$$, while $$(0.9,0.6)$$ yields $$O(T^{-0.9})$$. These are
-upper bounds under the region and regularity assumptions, not fitted
-slopes for the simulation curves.
-
-If $$g(\theta;x)=q(x)^\top\theta$$, the population Jacobian is constant.
-There is no moving-target term, the curvature radius restriction
-disappears, and the analysis improves to $$O(T^{-\eta})$$ for $$\eta<1$$,
-or $$O(1/T)$$ for $$\eta=1$$ with $$a h_{\mathcal K}>1$$, on the chosen compact
-set. This includes the quadratic regression in coefficients above.
-
-### Identification and convergence are separate conditions
-
-Even global uniqueness of the moment root need not imply global
-convergence of this iteration. For the deterministic moment
-$$\bar m(\theta)=\theta^3-1$$, the unique root is $$1$$. Starting at
-$$\theta_0=0$$, $$S_0=0$$ leaves both states at zero because the sampled
-Jacobian vanishes there.
-
-A global nonlinear result requires additional control, such as a
-uniform alignment condition
+Substitution into (44) yields the three cases in (25). Under (26),
+$$\mathcal R_t=O(n_t^{-4/3})$$, so the constant
 
 $$
-(\theta-\theta_*)^\top
- A_\lambda(\bar M(\theta))\bar m(\theta)
- \ge c_0\|\theta-\theta_*\|^2,
-\qquad \theta\in\Theta,\quad c_0>0,
+D=\sup_{t\ge0} n_{t+1}^2
+ \left[v\alpha_{t+1}^2+
+       \frac{w}{q^4}\alpha_{t+1}\mathcal R_t\right]
+\tag{46}
 $$
 
-together with regularity on that entire set. Local rank alone does not
-provide it.
+is finite. Induction in (43) with
+$$C_{\mathcal K}=\max\{t_0u_0,D/(ah-1)\}$$ proves the first inequality
+in (27). Minkowski's inequality gives
 
-## 5. What the existing simulations show
+$$
+\bigl(\mathbb E\|\bar\theta_T-\theta_*\|^2\bigr)^{1/2}
+ \le\frac1T\sum_{t=1}^T\sqrt{u_t}.
+\tag{47}
+$$
 
-The October 5 simulation note compares four degree sets:
-$$H_1=\{1\}$$, $$H_{01}=\{0,1\}$$, $$H_{012}=\{0,1,2\}$$, and
-$$H_{0123}=\{0,1,2,3\}$$. Each configuration was repeated ten times, with
-$$10^7$$ updates. The recorded SSGMM settings were
-$$\alpha_t=0.1(t+10)^{-0.7}$$, $$\beta_t=(t+10)^{-0.6}$$, and
-$$\lambda=10^{-2}$$. TOSG used $$\alpha_t=0.1t^{-0.5}$$.
+This preserves the powers and boundary logarithm in (24)–(25); when
+$$u_t\le C_{\mathcal K}/(t+t_0)$$, the right-hand side is at most
+$$2\sqrt{C_{\mathcal K}/T}$$, proving the second inequality in (27).
 
-The following are selected **final median Euclidean parameter errors**
-from that note, rather than mean-square rates:
+Finally, if $$\eta+\rho>1$$, (38) implies
+$$\sum_t\alpha_{t+1}\Pr(\mathcal B_t)<\infty$$ and hence
+$$\sum_t\alpha_{t+1}\mathbf1_{\mathcal B_t}<\infty$$ almost surely.
+Apply the almost-supermartingale theorem of
+[Robbins and Siegmund (1971)][robbins-siegmund] to (42). It gives
+convergence of $$\|e_t\|^2$$ and finiteness of
+$$\sum_t\alpha_{t+1}\|e_t\|^2$$. Since
+$$\sum_t\alpha_t=\infty$$, that limit is zero. $$\square$$
 
-- **Quadratic structure, linear first stage:** $$H_1$$ gives $$2.7821$$,
-  $$H_{01}$$ gives $$1.1563$$, and $$H_{012}$$ gives $$0.0017$$.
-  This is consistent with the missing quadratic coefficient directions
-  in the smaller bases.
-- **Quadratic structure, ReLU first stage:** the errors for $$H_{012}$$
-  and $$H_{0123}$$ are $$0.0919$$ and $$0.0286$$. The extra cubic block helps
-  in this recorded configuration.
-- **Exponential structure, tanh first stage:** $$H_{012}$$ gives $$0.0095$$,
-  whereas $$H_{0123}$$ gives $$0.2100$$. Adding a degree does not help
-  uniformly across models.
+## References
 
-<figure>
-  <a href="{{ '/images/sieve-sgmm/quadratic-relu-iterations.png' | relative_url }}">
-    <img src="{{ '/images/sieve-sgmm/quadratic-relu-iterations.png' | relative_url }}" alt="Historical quadratic–ReLU experiment: parameter error and prediction MSE against iterations for four SSGMM bases and TOSG." loading="lazy" width="1434" height="588">
-  </a>
-  <figcaption>Quadratic structure with a ReLU first stage. The stored curves illustrate how additional basis degrees can improve recovery. Click the figure to inspect its labels.</figcaption>
-</figure>
+1. Hansen, L. P. (1982). [Large sample properties of generalized method of moments estimators][hansen]. *Econometrica*, **50**(4), 1029–1054.
+2. Chen, X., Chernozhukov, V., Lee, S., and Newey, W. K. (2014). [Local identification of nonparametric and semiparametric models][identification]. *Econometrica*, **82**(2), 785–809. DOI: 10.3982/ECTA9988.
+3. Chen, X., Lee, S., Liao, Y., Seo, M. H., Shin, Y., and Song, M. (2025). [SGMM: Stochastic approximation to generalized method of moments][sgmm]. *Journal of Financial Econometrics*, **23**(1), nbad027. DOI: 10.1093/jjfinec/nbad027. The nonlinear construction is discussed in Section 7.
+4. Chen, X., Roy, A., Hu, Y., and Balasubramanian, K. (2024). [Stochastic optimization algorithms for instrumental variable regression with streaming data][streaming-iv]. *Advances in Neural Information Processing Systems*, **37**, 26510–26542.
+5. Borkar, V. S. (1997). [Stochastic approximation with two time scales][borkar]. *Systems & Control Letters*, **29**(5), 291–294. DOI: 10.1016/S0167-6911(97)90015-3.
+6. Polyak, B. T., and Juditsky, A. B. (1992). [Acceleration of stochastic approximation by averaging][polyak]. *SIAM Journal on Control and Optimization*, **30**(4), 838–855. DOI: 10.1137/0330046.
+7. Robbins, H., and Siegmund, D. (1971). [A convergence theorem for non negative almost supermartingales and some applications][robbins-siegmund]. In J. S. Rustagi (Ed.), *Optimizing Methods in Statistics*, pp. 233–257. Academic Press. DOI: 10.1016/B978-0-12-604550-5.50015-8.
 
-<figure>
-  <a href="{{ '/images/sieve-sgmm/exp-tanh-iterations.png' | relative_url }}">
-    <img src="{{ '/images/sieve-sgmm/exp-tanh-iterations.png' | relative_url }}" alt="Historical exponential–tanh experiment: the degree-two sieve achieves a smaller final parameter error than the degree-three sieve." loading="lazy" width="1434" height="588">
-  </a>
-  <figcaption>Exponential structure with a tanh first stage. The same expansion to degree three can worsen recovery. Both figures are unchanged artifacts from the October 5 note; they have not been rerun with the current code.</figcaption>
-</figure>
-
-These plots compare equal **iteration counts**. SSGMM uses one ordinary
-observation per step, while TOSG uses two conditional draws sharing an
-instrument. The figures therefore do not establish equal-data-budget or
-equal-oracle comparisons. The shaded regions are retained from the saved
-plots; they are not interpreted here as confidence intervals.
-
-Prediction MSE is also a different target from structural parameter
-recovery. With endogenous noise, its cross term need not vanish away
-from the truth, so a lower prediction MSE need not indicate a better IV
-estimate. The parameter-error panels are the more direct diagnostic in
-these simulations, where $$\theta_*$$ is known.
-
-## 6. Reading the current implementation
-
-The current `SSGMM` class fixes the Hermite family, Newton-type gain,
-identity moment weighting, one observation per step, a running Jacobian,
-parameter projection, and iterate averaging. The degree set is the main
-structural choice; scalar step sizes and the ridge remain configurable.
-The implementation currently supports degree blocks zero through three.
-
-The experiment configuration inspected for this post uses
-
-```python
-ALGO_SSGMM_BASIS = [(1,), (0, 1), (0, 1, 2), (0, 1, 2, 3)]
-ALGO_SSGMM_LR = 0.1
-ALGO_SSGMM_LR_DECAY = 0.7
-ALGO_SSGMM_JACOBIAN_LR = 1.0
-ALGO_SSGMM_JACOBIAN_LR_DECAY = 0.6
-ALGO_SSGMM_LR_OFFSET = 10.0
-ALGO_SSGMM_REG = 1e-2
-ALGO_SSGMM_CLIP = 20.0
-```
-
-The compatibility name `CLIP` now denotes projection of the **parameter**
-onto a ball of radius 20 about zero. It does not clip the random
-direction. This stability device must be distinguished from the smaller
-local region required by the nonlinear theorem. The October 20 note
-still describes its simulations as unprojected; the implementation
-inspected on October 23 already includes parameter projection.
-
-The class defaults are different from the explicit experiment settings:
-its parameter step is $$0.05(t+10)^{-0.8}$$, with the same Jacobian exponent
-$$0.6$$. Under the nonlinear theorem's assumptions, these exponents give
-$$\rho=0.8$$. Neither configuration is the harmonic schedule used for the
-$$1/T$$ corollary.
-
-At the level of one iteration, the method can be written as follows.
-Here `project` is Euclidean projection onto the chosen parameter set,
-and `grad_g` returns a $$d$$-vector.
-
-```python
-# theta, S, and theta_avg hold the state before this iteration.
-# S has shape (p, d); each observation is used exactly once.
-z, x, y = next(stream)
-psi = basis(z)                         # shape (p,)
-moment = psi * (g(theta, x) - y)
-jacobian = np.outer(psi, grad_g(theta, x))
-
-# The gain uses the old S, before absorbing the current observation.
-direction = np.linalg.solve(S.T @ S + ridge * np.eye(d), S.T @ moment)
-theta_new = project(theta - alpha(t + 1) * direction)
-S_new = (1 - beta(t + 1)) * S + beta(t + 1) * jacobian
-theta_avg = (t * theta_avg + theta_new) / (t + 1)
-theta, S = theta_new, S_new
-```
-
-If $$S_0=0$$, the first parameter step is zero. The first observation
-initializes the Jacobian state for the subsequent steps. Inverting the
-Gram matrix explicitly is unnecessary; a linear solve gives the direction.
-
-## 7. Choosing a basis and interpreting the scope
-
-For nested orthonormal bases, $$J_{\mathcal K}$$ increases in
-positive-semidefinite order. At the population level, retaining existing
-blocks while adding new ones cannot reduce $$\mu_{\mathcal K}$$. But blocks
-with $$C_k=0$$ add no signal, and estimated extra rows can add noise and
-cost at finite time. Curvature and noise constants may also grow.
-
-Basis choice should therefore proceed through three concrete questions:
-
-1. Does the basis capture every parameter direction, or leave a rank
-   deficiency or a global ambiguity?
-2. Is its weakest signal strong enough relative to the ridge and step
-   coefficient, and is the required nonlinear region credible?
-3. Do extra moments improve recovery enough to justify their noise and
-   computational cost under the available sample budget?
-
-The theory here concerns a fixed finite-dimensional structural parameter
-and a fixed basis. If that basis already identifies the correctly specified
-parameter, truncation does not automatically create parameter bias:
-$$\theta_*$$ still solves all selected valid moments. An insufficient basis
-can instead leave multiple roots or invisible directions.
-
-A growing or adaptively selected basis requires additional analysis,
-including uniform control of signal, curvature, and noise as dimension
-changes. The current results also do not give nonlinear convergence from
-arbitrary initialization, rates for higher-order identification, or
-efficient inference. Those questions remain separate from the finite-time
-parameter bounds developed here.
-
-## References and source note
-
-- Chen, X., Lee, S., Liao, Y., Seo, M. H., Shin, Y., and Song, M. (2025).
-  [SGMM: Stochastic Approximation to Generalized Method of Moments](https://doi.org/10.1093/jjfinec/nbad027).
-  *Journal of Financial Econometrics*, 23(1), nbad027.
-- Chen, X., Chernozhukov, V., Lee, S., and Newey, W. K. (2014).
-  [Local Identification of Nonparametric and Semiparametric Models](https://doi.org/10.3982/ECTA9988).
-  *Econometrica*, 82(2), 785–809.
-- Chen, X., Roy, A., Hu, Y., and Balasubramanian, K. (2024).
-  [Stochastic Optimization Algorithms for Instrumental Variable Regression with Streaming Data](https://arxiv.org/abs/2405.19463).
-  *Advances in Neural Information Processing Systems*, 37, 26510–26542.
-  Its oracle and model assumptions differ from those used here; comparing
-  rate exponents alone would not compare the strength of the results.
-
-The SSGMM bounds, examples, and simulation summaries above are drawn from
-my research progress notes dated October 5 and October 20, 2026, checked
-against the implementation on October 23, 2026. The displayed nonlinear
-rates summarize the analysis in those notes; they are not presented as
-theorems proved by the cited SGMM or streaming-IV papers. The historical
-plots are included as exploratory evidence, without a new simulation run.
+[hansen]: https://larspeterhansen.org/lph_research/large-sample-properties-of-generalized-method-of-moments-estimators/
+[identification]: https://doi.org/10.3982/ECTA9988
+[sgmm]: https://doi.org/10.1093/jjfinec/nbad027
+[streaming-iv]: https://proceedings.neurips.cc/paper_files/paper/2024/hash/2ea07a4acbf7e38913062fd69a70805f-Abstract-Conference.html
+[borkar]: https://doi.org/10.1016/S0167-6911(97)90015-3
+[polyak]: https://doi.org/10.1137/0330046
+[robbins-siegmund]: https://doi.org/10.1016/B978-0-12-604550-5.50015-8

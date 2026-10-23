@@ -45,6 +45,13 @@ caches are ignored by Git. The site URL in `_config.yml` is the production
 GitHub Pages URL. Development utilities and unused theme demonstration
 pages are excluded from the generated website.
 
+## Research materials
+
+The experiment design for the Sieve GMM article is recorded in
+[scripts/sieve-sgmm/EXPERIMENT_PLAN.md](scripts/sieve-sgmm/EXPERIMENT_PLAN.md).
+Research plans and development utilities under `scripts/` are excluded from
+the generated website.
+
 ## Theme attribution
 
 Built on [AcademicPages](https://github.com/academicpages/academicpages.github.io),
