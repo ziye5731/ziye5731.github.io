@@ -1,0 +1,11 @@
+---
+layout: single
+---
+
+{%- comment -%}
+Keep Markdown asset links local to each post bundle. Export the assets through
+page.asset_path and resolve those links before applying the normal page layout.
+{%- endcomment -%}
+{%- capture asset_src -%}src="{{ page.asset_path | relative_url }}/{%- endcapture -%}
+{%- capture asset_href -%}href="{{ page.asset_path | relative_url }}/{%- endcapture -%}
+{{ content | replace: 'src="assets/', asset_src | replace: 'href="assets/', asset_href }}

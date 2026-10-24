@@ -13,17 +13,34 @@ and the AcademicPages theme.
 - `_data/navigation.yml`: top navigation.
 - `images/` and `notes/`: images and downloadable notes.
 
-Blog articles use `_posts/YYYY-MM-DD-slug.md`. Set `categories: [blog]` in
-their front matter to include them in the Blog list. Existing article
-permalinks are explicit so that filenames can change without changing URLs.
+Each blog article has its own folder named by its slug, for example:
 
-Use `$...$` for inline math and `$$` on separate lines for display math, so
-articles also preview in VS Code and other math-aware Markdown readers.
+```text
+_posts/sieve-sgmm/
+  2026-10-23-sieve-sgmm.md
+  assets/
+    images/       # PNG previews and SVG originals
+    results/      # protocol and result summaries
+```
+
+Keep the date in the Markdown filename, rather than the folder name, so
+Jekyll recognizes only the article as a post. Set `categories: [blog]` to
+include the article in the Blog list. Explicit permalinks keep article URLs
+stable when files are reorganized.
+
+Use ordinary Markdown paths such as `assets/images/calibration-rates.png`
+and `assets/results/protocol.json`. This keeps previews self-contained when
+opening a post folder in VS Code or another Markdown reader. The
+`post-bundle` layout converts these links to the front matter's `asset_path`
+for the website while retaining the normal `single` page style.
+`assets/posts/sieve-sgmm` is a relative directory symlink to this post's
+`assets/`; Jekyll's safe build copies the assets into the generated website.
+The source images and result summaries are stored only in the post folder.
+
+Use `$...$` for inline math and `$$` on separate lines for display math.
 In inline math, prefer `\lVert ...\rVert`, `\lbrace ...\rbrace`, and
 `_{\ast}` to prevent Markdown from interpreting TeX delimiters as formatting.
-Use ordinary Markdown links relative to the source file (for example,
-`../images/...` in `_posts/`); `jekyll-relative-links` resolves them for the
-published site. Contents lists use ordinary heading links.
+Contents lists use ordinary heading links.
 
 ## Local preview
 

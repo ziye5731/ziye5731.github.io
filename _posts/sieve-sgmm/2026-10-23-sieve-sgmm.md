@@ -3,7 +3,8 @@ title: "Streaming Sieve GMM for Nonlinear Instrumental Variable Regression"
 date: 2026-10-23
 permalink: /posts/2026/10/sieve-sgmm/
 excerpt: "One-observation streaming GMM for nonlinear IV regression, with explicit conditions for finite-basis identification and finite-time mean-square convergence."
-layout: single
+layout: post-bundle
+asset_path: /assets/posts/sieve-sgmm
 author_profile: false
 read_time: true
 comments: false
@@ -598,9 +599,9 @@ compiled implementation was checked against the existing SSGMM code on
 identical streams. No configuration uses direction clipping, exponential
 clipping, restarts, or early stopping. The full settings, fixed parameter
 vectors, seeds, and code version are recorded in the
-[experiment protocol](../files/sieve-sgmm/protocol.json).
-The [terminal statistics](../files/sieve-sgmm/terminal-statistics.csv)
-and [budget comparisons](../files/sieve-sgmm/budget-statistics.csv)
+[experiment protocol](assets/results/protocol.json).
+The [terminal statistics](assets/results/terminal-statistics.csv)
+and [budget comparisons](assets/results/budget-statistics.csv)
 include all configurations, both estimators, and the uncertainty diagnostics.
 
 ### Statistical protocol
@@ -704,7 +705,7 @@ approximately $-0.685,-0.894,-0.998$, respectively. Here tracking is
 not the dominant finite-sample error, and the nonlinear model has small
 curvature. Consequently, these experiments do not establish sharpness
 of the moving-target term in (28). The
-[tracking fourth-moment plot](../images/sieve-sgmm/tracking-scales.svg)
+[tracking fourth-moment plot](assets/images/tracking-scales.svg)
 shows the observed errors alongside the theoretical time scales, with
 arbitrary vertical constants. Faster empirical behavior does not improve
 the general theorem.
@@ -1084,11 +1085,11 @@ $\sum_t\alpha_t=\infty$, that limit is zero. $\square$
 
 [efron]: https://doi.org/10.1214/aos/1176344552
 
-[calibration-rates-png]: ../images/sieve-sgmm/calibration-rates.png
-[calibration-rates-svg]: ../images/sieve-sgmm/calibration-rates.svg
-[linear-basis-rates-png]: ../images/sieve-sgmm/linear-basis-rates.png
-[linear-basis-rates-svg]: ../images/sieve-sgmm/linear-basis-rates.svg
-[relu-basis-rates-png]: ../images/sieve-sgmm/relu-basis-rates.png
-[relu-basis-rates-svg]: ../images/sieve-sgmm/relu-basis-rates.svg
-[exp-initialization-png]: ../images/sieve-sgmm/exp-initialization.png
-[exp-initialization-svg]: ../images/sieve-sgmm/exp-initialization.svg
+[calibration-rates-png]: assets/images/calibration-rates.png
+[calibration-rates-svg]: assets/images/calibration-rates.svg
+[linear-basis-rates-png]: assets/images/linear-basis-rates.png
+[linear-basis-rates-svg]: assets/images/linear-basis-rates.svg
+[relu-basis-rates-png]: assets/images/relu-basis-rates.png
+[relu-basis-rates-svg]: assets/images/relu-basis-rates.svg
+[exp-initialization-png]: assets/images/exp-initialization.png
+[exp-initialization-svg]: assets/images/exp-initialization.svg
