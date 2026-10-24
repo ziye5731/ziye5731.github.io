@@ -340,6 +340,7 @@ plugins:
   - jekyll-sitemap
   - jekyll-redirect-from
   - jemoji
+  - jekyll-relative-links
 
 # Mimic GitHub Pages with --safe
 whitelist:
@@ -349,7 +350,13 @@ whitelist:
   - jekyll-sitemap
   - jekyll-redirect-from
   - jemoji
+  - jekyll-relative-links
 
+
+# Resolve source-relative article assets to their generated site URLs.
+relative_links:
+  enabled: true
+  collections: true
 
 # Archives
 #  Type

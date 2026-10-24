@@ -17,6 +17,14 @@ Blog articles use `_posts/YYYY-MM-DD-slug.md`. Set `categories: [blog]` in
 their front matter to include them in the Blog list. Existing article
 permalinks are explicit so that filenames can change without changing URLs.
 
+Use `$...$` for inline math and `$$` on separate lines for display math, so
+articles also preview in VS Code and other math-aware Markdown readers.
+In inline math, prefer `\lVert ...\rVert`, `\lbrace ...\rbrace`, and
+`_{\ast}` to prevent Markdown from interpreting TeX delimiters as formatting.
+Use ordinary Markdown links relative to the source file (for example,
+`../images/...` in `_posts/`); `jekyll-relative-links` resolves them for the
+published site. Contents lists use ordinary heading links.
+
 ## Local preview
 
 Use Ruby 3.1 or later with Bundler, then install the dependencies:
