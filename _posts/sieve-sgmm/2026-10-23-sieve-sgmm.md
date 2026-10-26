@@ -19,64 +19,129 @@ tags:
   - sieve methods
 ---
 
-An instrumental variable can be valid while a particular collection of
-instrument moments fails to identify the structural parameter. Even when
-those moments identify the parameter, a nonlinear online algorithm needs
-additional conditions to reach it. These are different requirements, and a
-streaming method should make both explicit.
 
-This post develops **streaming sieve generalized method of moments
-(SSGMM)** for a correctly specified, finite-dimensional nonlinear IV model.
-A finite collection of instrument functions converts a conditional
-restriction into unconditional moments. A running Jacobian then supplies a
-damped Gauss–Newton direction using one new observation per update. The
-theory has two parts: a basis-dependent condition for regular local
-identification, and a finite-time mean-square convergence bound. The latter
-includes an $O(T^{-1})$ setting, with explicit restrictions on the step
-sizes, identification strength, and parameter region.
+This post develops **streaming sieve generalized method of moments (SSGMM)** for nonlinear instrumental variable (IV) regression models.
+**The goal is one ordinary observation per update, with no conditional two-sample oracle and no first-stage or conditional-model nuisance estimation.**
 
-The construction combines the moment formulation of
-[Hansen (1982)][hansen], the nonlinear SGMM direction discussed by
-[Chen et al. (2025, Section 7)][sgmm], and two-time-scale stochastic
-approximation [Borkar (1997)][borkar]. The rank condition is classical;
-the analysis below expresses its consequences for the selected instrument
-basis and for this particular streaming recursion. All results keep the
-basis and parameter dimensions fixed as the stream grows.
+A finite collection of instrument functions converts a conditional restriction into unconditional moments. 
+A running Jacobian then supplies a damped Gauss–Newton direction using one new observation per update. 
+The theory has two parts: a basis-dependent condition for regular local identification, and a finite-time mean-square convergence bound. 
+The latter includes an $O(T^{-1})$ setting, with explicit restrictions on the step sizes, identification strength, and parameter region.
+
+The construction combines the moment formulation of [Hansen (1982)][hansen], the nonlinear SGMM direction discussed by [Chen et al. (2025, Section 7)][sgmm], and two-time-scale stochastic approximation [Borkar (1997)][borkar]. 
+The rank condition is classical; the analysis below expresses its consequences for the selected instrument basis and for this particular streaming recursion. 
+All results keep the basis and parameter dimensions fixed as the stream grows.
 
 ## Contents
 
+- [Contents](#contents)
 - [Section 1: Model and finite-basis moments](#section-1-model-and-finite-basis-moments)
+  - [The conditional moment model](#the-conditional-moment-model)
+  - [Data access and nuisance fitting](#data-access-and-nuisance-fitting)
+  - [A normalized Hermite basis](#a-normalized-hermite-basis)
 - [Section 2: A predictable Jacobian gives a one-observation update](#section-2-a-predictable-jacobian-gives-a-one-observation-update)
 - [Section 3: Identification: which parameter directions do the moments see?](#section-3-identification-which-parameter-directions-do-the-moments-see)
+  - [Result 1: regular local identification](#result-1-regular-local-identification)
+  - [A basis can miss signal even in one dimension](#a-basis-can-miss-signal-even-in-one-dimension)
+  - [Local rank does not establish global uniqueness](#local-rank-does-not-establish-global-uniqueness)
+  - [What enlarging the basis can guarantee](#what-enlarging-the-basis-can-guarantee)
 - [Section 4: Convergence rates: identification, curvature, and tracking](#section-4-convergence-rates-identification-curvature-and-tracking)
+  - [Assumptions and the admissible region](#assumptions-and-the-admissible-region)
+  - [Result 2: finite-time mean-square convergence](#result-2-finite-time-mean-square-convergence)
+  - [Why the exponent has three terms](#why-the-exponent-has-three-terms)
+  - [How the basis affects the rate guarantee](#how-the-basis-affects-the-rate-guarantee)
 - [Section 5: Experiments: identification, rates, and finite-sample limitations](#section-5-experiments-identification-rates-and-finite-sample-limitations)
+  - [Statistical protocol](#statistical-protocol)
+  - [A calibrated nonlinear model](#a-calibrated-nonlinear-model)
+  - [Tracking need not determine the observed rate](#tracking-need-not-determine-the-observed-rate)
+  - [Multivariate basis expansion: signal and noise have different effects](#multivariate-basis-expansion-signal-and-noise-have-different-effects)
+  - [A nonlinear-parameter stress test: initialization remains consequential](#a-nonlinear-parameter-stress-test-initialization-remains-consequential)
 - [Section 6: Scope and implications](#section-6-scope-and-implications)
 - [Appendix: proof of the rate result](#appendix-proof-of-the-rate-result)
+  - [A. Gain regularity and local contraction](#a-gain-regularity-and-local-contraction)
+  - [B. Tracking the moving Jacobian](#b-tracking-the-moving-jacobian)
+  - [C. From tracking to parameter error](#c-from-tracking-to-parameter-error)
+  - [D. Solving the recursion and averaging](#d-solving-the-recursion-and-averaging)
 - [References](#references)
 
 ## Section 1: Model and finite-basis moments
 
 ### The conditional moment model
 
-Let $D_t=(z_t,x_t,y_t)$ be i.i.d. observations, with
-$z\in\mathbb R^{d_z}$, $x\in\mathbb R^{d_x}$, and
+Let $D_t=(z_t,x_t,y_t)$ be i.i.d. observations, with $z\in\mathbb R^{d_z}$, $x\in\mathbb R^{d_x}$, and
 
 $$
 y=g(\theta_*;x)+\varepsilon,
 \qquad \theta_*\in\mathbb R^d,
-\qquad \mathbb E[\varepsilon\mid z]=0.
+\qquad \mathbb E[\varepsilon \mid z]=0,
 \tag{1}
 $$
 
-The known structural map $g$ can be nonlinear in both $x$ and
-$\theta$. Endogeneity is allowed: $\mathbb E[\varepsilon\mid x]$ need
-not be zero. The conditional mean restriction in (1) is the assumption we
-use; independence between the outcome and regressor conditional on the
-instrument is not required. Nor do we need to specify or estimate a
-first-stage regression for $x$ given $z$.
+where the structural map $g$ can be nonlinear in both $x$ and $\theta$. 
+Endogeneity is allowed: $\mathbb E[\varepsilon\mid x]$ need not be zero. 
 
-Choose a fixed vector of instrument functions
-$\psi_{\mathcal K}(z)\in\mathbb R^{p_{\mathcal K}}$. Define the sample
+The conditional moment restriction is the core assumption.
+For a square-integrable residual, the IV restriction is equivalent to
+
+$$
+\begin{aligned}
+&\mathbb E[g(\theta;x)-y\mid z]=0\\
+&\quad\Longleftrightarrow\quad
+\mathbb E\!\left[f(z)\{g(\theta;x)-y\}\right]=0
+\quad\text{for every }f\in L^2(P_z).
+\end{aligned}
+$$
+
+Choosing a finite vector of test functions gives a GMM moment condition [Hansen (1982)][hansen].
+For a linear structural model, the choice $f(z)=z$ gives the linear IV moments used by 2SLS.
+The choice of $f$ determines which deviations from the structural model the moments can detect.
+
+
+Conditional stochastic optimization (CSO) uses the squared conditional residual.
+When differentiation may pass through expectation,
+
+$$
+\begin{aligned}
+L(\theta)
+ &=\frac12\mathbb E\!\left[
+       \bigl(\mathbb E[g(\theta;x)-y\mid z]\bigr)^2\right],\\
+f_\theta(z)
+ &=\mathbb E[\nabla_\theta g(\theta;x)\mid z],\\
+\nabla L(\theta)
+ &=\mathbb E\!\left[f_\theta(z)\{g(\theta;x)-y\}\right].
+\end{aligned}
+$$
+
+The gradient contains a product of conditional expectations.
+TOSG-IVaR obtains an unbiased gradient using a second regressor draw $x^\prime$ from the true conditional distribution [Chen et al. (2024, Algorithm 1)][streaming-iv]:
+
+$$
+\begin{gathered}
+x'\mid z\sim P_{x\mid z},\qquad x'\perp(x,y)\mid z,\\
+v(\theta)=\nabla_\theta g(\theta;x')\{g(\theta;x)-y\},\\
+\mathbb E[v(\theta)]=\nabla L(\theta).
+\end{gathered}
+$$
+
+This access to a second independent regressor at the same instrument value is the **conditional two-sample oracle**.
+Using the observed $x$ for both factors generally introduces a conditional covariance term.
+The one-sample OTSG-IVaR formulation instead estimates a first-stage parameter $\gamma$ in its linear model [Chen et al. (2024, Algorithm 2)][streaming-iv].
+
+**Our target.**
+
+> Estimate the nonlinear structural parameter from **one ordinary observation $(z_t,x_t,y_t)$ per update**, with **no conditional two-sample oracle** and **no first-stage or conditional-model nuisance estimation**.
+
+**Sieve + SGMM.** Choose a directly evaluable, fixed test vector $f(z)=\psi_{\mathcal K}(z)$ and solve
+
+$$
+\mathbb E\!\left[\psi_{\mathcal K}(z)\{g(\theta;x)-y\}\right]=0.
+$$
+
+No fitted $\mathbb E[x\mid z]$, conditional density $p(x\mid z)$, or conditional derivative $f_\theta(z)$ is needed.
+SGMM supplies the online update by tracking the **finite unconditional moment Jacobian** from past observations; Section 2 gives the recursion.
+The finite basis must retain enough information to identify the parameter, which is the subject of Section 3.
+
+Given a fixed vector of instrument functions $\psi_{\mathcal K}(z)\in\mathbb R^{p_{\mathcal K}}$, we define the sample
 moment, its sample Jacobian, and their expectations by
 
 $$
@@ -85,8 +150,8 @@ m_{\mathcal K}(D,\theta)
   &=\psi_{\mathcal K}(z)\{g(\theta;x)-y\},\\
 M_{\mathcal K}(D,\theta)
   &=\psi_{\mathcal K}(z)\nabla_\theta g(\theta;x)^\top,\\
-\bar m_{\mathcal K}(\theta)&=\mathbb E[m_{\mathcal K}(D,\theta)],
-&\quad \bar M_{\mathcal K}(\theta)&=\mathbb E[M_{\mathcal K}(D,\theta)].
+\bar m_{\mathcal K}(\theta)&=\mathbb E[m_{\mathcal K}(D,\theta)], \\
+\bar M_{\mathcal K}(\theta)&=\mathbb E[M_{\mathcal K}(D,\theta)].
 \end{aligned}
 \tag{2}
 $$
@@ -109,6 +174,29 @@ from $\mathbb E\lVert m_{\mathcal K}(D,\theta)\rVert^2/2$: minimizing the latter
 need not recover $\theta_{\ast}$ under endogeneity. The distinction also
 explains why multiplying a current sample Jacobian by the current sample
 moment does not generally give an unbiased gradient of (3).
+
+### Data access and nuisance fitting
+
+Here, **nuisance estimation** means fitting a first-stage regression, conditional distribution, conditional expectation, or conditional mean embedding in addition to the structural model.
+The table describes the cited formulations; learned critics and unconditional matrix states are noted explicitly.
+
+| Method / formulation | Conditional two-sample oracle? | First-stage / conditional-model nuisance estimation? |
+|:--|:--|:--|
+| Fixed-instrument GMM [Hansen (1982)][hansen] | No | No; the instrument functions are specified directly. |
+| 2SLS, usual two-stage implementation [Singh et al. (2019, Section 1)][kiv] | No | Yes: first-stage linear projection coefficients. |
+| DeepIV [Hartford et al. (2017)][deepiv] | No external oracle; uses draws from its fitted model. | Yes: a conditional treatment distribution. |
+| KIV [Singh et al. (2019)][kiv] | No | Yes: a conditional mean embedding. |
+| DeepGMM [Bennett et al. (2019)][deepgmm] | No | No first-stage conditional-model fit; it learns an adversarial test function. |
+| TOSG-IVaR [Chen et al. (2024, Algorithm 1)][streaming-iv] | Yes | No first-stage fit. |
+| OTSG-IVaR, linear model [Chen et al. (2024, Algorithm 2)][streaming-iv] | No | Yes: the first-stage coefficient matrix $\gamma$. |
+| **SSGMM, the recursion below** | **No** | **No**; it tracks the unconditional Jacobian matrix $S_t$. |
+
+DeepIV's independent Monte Carlo draws come from an **estimated** conditional distribution; splitting data between two stages also does not provide a true conditional two-sample oracle.
+The 2SLS row describes its two-stage implementation: the same estimator can be expressed as weighted linear GMM without explicitly fitting a first stage.
+
+Fixed-instrument GMM already avoids both requirements.
+SSGMM retains these properties in a **one-pass nonlinear recursion**, with basis-dependent identification and finite-time convergence conditions.
+The Jacobian state $S_t$ is an online estimate of a finite unconditional matrix, rather than an estimated function of $z$.
 
 ### A normalized Hermite basis
 
@@ -1074,6 +1162,9 @@ $\sum_t\alpha_t=\infty$, that limit is zero. $\square$
 7. Robbins, H., and Siegmund, D. (1971). [A convergence theorem for non negative almost supermartingales and some applications][robbins-siegmund]. In J. S. Rustagi (Ed.), *Optimizing Methods in Statistics*, pp. 233–257. Academic Press. DOI: 10.1016/B978-0-12-604550-5.50015-8.
 
 8. Efron, B. (1979). [Bootstrap methods: Another look at the jackknife][efron]. *The Annals of Statistics*, **7**(1), 1–26. DOI: 10.1214/aos/1176344552.
+9. Hartford, J., Lewis, G., Leyton-Brown, K., and Taddy, M. (2017). [Deep IV: A flexible approach for counterfactual prediction][deepiv]. *Proceedings of the 34th International Conference on Machine Learning*, **70**, 1414–1423.
+10. Singh, R., Sahani, M., and Gretton, A. (2019). [Kernel instrumental variable regression][kiv]. *Advances in Neural Information Processing Systems*, **32**, 4595–4607.
+11. Bennett, A., Kallus, N., and Schnabel, T. (2019). [Deep generalized method of moments for instrumental variable analysis][deepgmm]. *Advances in Neural Information Processing Systems*, **32**, 3564–3574.
 
 [hansen]: https://larspeterhansen.org/lph_research/large-sample-properties-of-generalized-method-of-moments-estimators/
 [identification]: https://doi.org/10.3982/ECTA9988
@@ -1084,6 +1175,9 @@ $\sum_t\alpha_t=\infty$, that limit is zero. $\square$
 [robbins-siegmund]: https://doi.org/10.1016/B978-0-12-604550-5.50015-8
 
 [efron]: https://doi.org/10.1214/aos/1176344552
+[deepiv]: https://proceedings.mlr.press/v70/hartford17a.html
+[kiv]: https://papers.neurips.cc/paper_files/paper/2019/hash/17b3c7061788dbe82de5abe9f6fe22b3-Abstract.html
+[deepgmm]: https://arxiv.org/abs/1905.12495
 
 [calibration-rates-png]: assets/images/calibration-rates.png
 [calibration-rates-svg]: assets/images/calibration-rates.svg
