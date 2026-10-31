@@ -179,20 +179,22 @@ moment does not generally give an unbiased gradient of (3).
 
 Here, **nuisance estimation** means fitting a first-stage regression, conditional distribution, conditional expectation, or conditional mean embedding in addition to the structural model.
 The table describes the cited formulations; learned critics and unconditional matrix states are noted explicitly.
+Nonlinear applicability concerns the structural regression function; the table distinguishes feature expansions from nonlinear parameterizations.
 
-| Method / formulation | Conditional two-sample oracle? | First-stage / conditional-model nuisance estimation? |
-|:--|:--|:--|
-| Fixed-instrument GMM [Hansen (1982)][hansen] | No | No; the instrument functions are specified directly. |
-| 2SLS, usual two-stage implementation [Singh et al. (2019, Section 1)][kiv] | No | Yes: first-stage linear projection coefficients. |
-| DeepIV [Hartford et al. (2017)][deepiv] | No external oracle; uses draws from its fitted model. | Yes: a conditional treatment distribution. |
-| KIV [Singh et al. (2019)][kiv] | No | Yes: a conditional mean embedding. |
-| DeepGMM [Bennett et al. (2019)][deepgmm] | No | No first-stage conditional-model fit; it learns an adversarial test function. |
-| TOSG-IVaR [Chen et al. (2024, Algorithm 1)][streaming-iv] | Yes | No first-stage fit. |
-| OTSG-IVaR, linear model [Chen et al. (2024, Algorithm 2)][streaming-iv] | No | Yes: the first-stage coefficient matrix $\gamma$. |
-| **SSGMM, the recursion below** | **No** | **No**; it tracks the unconditional Jacobian matrix $S_t$. |
+| Method | Conditional two-sample oracle | nuisance estimation? | Nonlinear IV regression |
+|:--|:--|:--| :-- |
+| Fixed-instrument GMM [Hansen (1982)][hansen] | No | No; the instrument functions are specified directly. | Yes: nonlinear moment functions, including nonlinear parameterizations. |
+| 2SLS, usual two-stage implementation [Singh et al. (2019, Section 1)][kiv] | No | Yes: first-stage linear projection coefficients. | Limited: prescribed nonlinear features, with linear coefficients. |
+| DeepIV [Hartford et al. (2017)][deepiv] | No external oracle; uses draws from its fitted model. | Yes: a conditional treatment distribution. | Yes: neural structural function. |
+| KIV [Singh et al. (2019)][kiv] | No | Yes: a conditional mean embedding. | Yes: structural function in an RKHS. |
+| DeepGMM [Bennett et al. (2019)][deepgmm] | No | No first-stage conditional-model fit; it learns an adversarial test function. | Yes: neural structural function. |
+| TOSG-IVaR [Chen et al. (2024, Algorithm 1)][streaming-iv] | Yes | No first-stage fit. | Yes; Proposition 1 gives a nonlinear stationarity bound. |
+| OTSG-IVaR, linear model [Chen et al. (2024, Algorithm 2)][streaming-iv] | No | Yes: the first-stage coefficient matrix $\gamma$. | No in the cited formulation; both stages are linear. |
+| **SSGMM, the recursion below** | **No** | **No**; it tracks the unconditional Jacobian matrix $S_t$. | **Yes**: nonlinear in both $x$ and $\theta$; the guarantees below are local. |
 
 DeepIV's independent Monte Carlo draws come from an **estimated** conditional distribution; splitting data between two stages also does not provide a true conditional two-sample oracle.
 The 2SLS row describes its two-stage implementation: the same estimator can be expressed as weighted linear GMM without explicitly fitting a first stage.
+Prespecified nonlinear regressor features can be included in 2SLS, while their coefficients still enter linearly.
 
 Fixed-instrument GMM already avoids both requirements.
 SSGMM retains these properties in a **one-pass nonlinear recursion**, with basis-dependent identification and finite-time convergence conditions.
