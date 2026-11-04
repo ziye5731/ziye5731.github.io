@@ -28,7 +28,7 @@ A running Jacobian then supplies a damped Gauss–Newton direction using one new
 The theory has two parts: a basis-dependent condition for regular local identification, and a finite-time mean-square convergence bound. 
 The latter includes an $O(T^{-1})$ setting, with explicit restrictions on the step sizes, identification strength, and parameter region.
 
-The construction combines the moment formulation of [Hansen (1982)][hansen], the nonlinear SGMM direction discussed by [Chen et al. (2025, Section 7)][sgmm], and two-time-scale stochastic approximation [Borkar (1997)][borkar]. 
+The construction combines the moment formulation of [Hansen (1982)][hansen], the nonlinear SGMM direction discussed by [Chen et al. (2025, Section 6)][sgmm], and two-time-scale stochastic approximation [Borkar (1997)][borkar].
 The rank condition is classical; the analysis below expresses its consequences for the selected instrument basis and for this particular streaming recursion. 
 All results keep the basis and parameter dimensions fixed as the stream grows.
 
@@ -683,8 +683,9 @@ local rate result analytically. We then test the effect of basis expansion
 in a multivariate model, and use a nonlinear exponential model to examine
 initialization and the limits of local conclusions.
 
-All runs use the one-observation recursion (8), with the previous Jacobian
-state, parameter projection, and the average of all updated iterates. The
+Except for the population-Jacobian diagnostics described below, all runs
+use the one-observation recursion (8), with the previous Jacobian state,
+parameter projection, and the average of all updated iterates. The
 compiled implementation was checked against the existing SSGMM code on
 identical streams. No configuration uses direction clipping, exponential
 clipping, restarts, or early stopping. The full settings, fixed parameter
@@ -746,7 +747,8 @@ $\alpha_t=a/(t+100)$, and $\beta_t=(t+100)^{-2/3}$.
 The degree-one moment is identically zero. For degree two,
 $\bar m_2(\theta)=\sqrt2\gamma^2(\theta+0.01\theta^2)$ and
 $\mu_2=2\gamma^4$. The moment has a unique zero on the parameter region.
-Its Lipschitz constant is $L=0.02\sqrt2\gamma^2$. For
+The population Jacobian $\bar M_2(\theta)=\sqrt2\gamma^2(1+0.02\theta)$
+is Lipschitz with constant $L=0.02\sqrt2\gamma^2$. For
 $\gamma=1$ and $0.5$, the constants in (22) satisfy the radius
 condition with $r=1$; all required fourth moments are finite. Thus the
 identifying runs provide a setting in which the theorem's region and
@@ -848,6 +850,12 @@ $\mu_{0123}\approx0.0129$. The estimated degree-three block has
 Frobenius norm about 7.275. Pilot batch means and their Monte Carlo errors
 are retained; a numerically nonzero singular value is not a proof of
 population full rank.
+
+For this fixed design, the H1 and H01 population ranks are 4 and 5.
+The Gaussian degree-one block lies in $\operatorname{col}(\Gamma)$
+and contains $\Gamma/2$ in the columns for $b$; the constant row
+adds one independent direction. The protocol distinguishes these
+population ranks from the pilot matrix's numerical ranks.
 
 At $2^{20}$, the harmonic last-iterate MSE is **0.3039** for H012 and
 **0.001597** for H0123. Their repeat-bootstrap 95% intervals are
@@ -1157,7 +1165,7 @@ $\sum_t\alpha_t=\infty$, that limit is zero. $\square$
 
 1. Hansen, L. P. (1982). [Large sample properties of generalized method of moments estimators][hansen]. *Econometrica*, **50**(4), 1029–1054.
 2. Chen, X., Chernozhukov, V., Lee, S., and Newey, W. K. (2014). [Local identification of nonparametric and semiparametric models][identification]. *Econometrica*, **82**(2), 785–809. DOI: 10.3982/ECTA9988.
-3. Chen, X., Lee, S., Liao, Y., Seo, M. H., Shin, Y., and Song, M. (2025). [SGMM: Stochastic approximation to generalized method of moments][sgmm]. *Journal of Financial Econometrics*, **23**(1), nbad027. DOI: 10.1093/jjfinec/nbad027. The nonlinear construction is discussed in Section 7.
+3. Chen, X., Lee, S., Liao, Y., Seo, M. H., Shin, Y., and Song, M. (2025). [SGMM: Stochastic approximation to generalized method of moments][sgmm]. *Journal of Financial Econometrics*, **23**(1), nbad027. DOI: 10.1093/jjfinec/nbad027. The nonlinear construction is discussed in Section 6.
 4. Chen, X., Roy, A., Hu, Y., and Balasubramanian, K. (2024). [Stochastic optimization algorithms for instrumental variable regression with streaming data][streaming-iv]. *Advances in Neural Information Processing Systems*, **37**, 26510–26542.
 5. Borkar, V. S. (1997). [Stochastic approximation with two time scales][borkar]. *Systems & Control Letters*, **29**(5), 291–294. DOI: 10.1016/S0167-6911(97)90015-3.
 6. Polyak, B. T., and Juditsky, A. B. (1992). [Acceleration of stochastic approximation by averaging][polyak]. *SIAM Journal on Control and Optimization*, **30**(4), 838–855. DOI: 10.1137/0330046.

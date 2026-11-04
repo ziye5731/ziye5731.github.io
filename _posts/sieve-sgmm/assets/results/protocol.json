@@ -1227,7 +1227,8 @@
             1
           ],
           "p": 8,
-          "rank": 8,
+          "pilot_numerical_rank": 8,
+          "population_rank": 4,
           "mu": 0.0,
           "min_parameter_singular_value": 0.0,
           "g_mcse_frobenius": 0.05661504343212981,
@@ -1240,7 +1241,8 @@
             1
           ],
           "p": 9,
-          "rank": 9,
+          "pilot_numerical_rank": 9,
+          "population_rank": 5,
           "mu": 0.0,
           "min_parameter_singular_value": 0.0,
           "g_mcse_frobenius": 0.05857582451577977,
@@ -1254,7 +1256,7 @@
             2
           ],
           "p": 45,
-          "rank": 14,
+          "pilot_numerical_rank": 14,
           "mu": 0.0006516307904794043,
           "min_parameter_singular_value": 0.025527059965444597,
           "g_mcse_frobenius": 0.1544584898167853,
@@ -1269,7 +1271,7 @@
             3
           ],
           "p": 165,
-          "rank": 14,
+          "pilot_numerical_rank": 14,
           "mu": 0.012922758473617603,
           "min_parameter_singular_value": 0.11367831135980866,
           "g_mcse_frobenius": 0.33839310483162477,
