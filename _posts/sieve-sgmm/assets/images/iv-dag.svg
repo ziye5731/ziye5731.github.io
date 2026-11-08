@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="520" height="224" viewBox="0 0 720 310" role="img" aria-labelledby="title desc">
+  <title id="title">Instrumental-variable causal diagram</title>
+  <desc id="desc">The instrument z causes the endogenous regressor x, which causes the outcome y. An unobserved confounder c causes both x and y. There is no direct arrow from z to y and no connection between z and c.</desc>
+  <!-- Adapted from the IV DAG in RA@YifanHu_presentation1/main.tex. -->
+  <defs>
+    <marker id="arrow-instrument" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M 0 0 L 10 4 L 0 8 Z" fill="#b34e38"/>
+    </marker>
+    <marker id="arrow-structural" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M 0 0 L 10 4 L 0 8 Z" fill="#353b42"/>
+    </marker>
+    <marker id="arrow-confounder" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M 0 0 L 10 4 L 0 8 Z" fill="#296899"/>
+    </marker>
+  </defs>
+  <rect width="720" height="310" fill="#ffffff"/>
+  <g fill="none" stroke-width="2.6" stroke-linecap="round">
+    <path id="z-to-x" d="M 128 105 H 329" stroke="#b34e38" marker-end="url(#arrow-instrument)"/>
+    <path id="x-to-y" d="M 390 105 H 589" stroke="#353b42" marker-end="url(#arrow-structural)"/>
+    <path id="c-to-x" d="M 468 211 L 382 128" stroke="#296899" marker-end="url(#arrow-confounder)"/>
+    <path id="c-to-y" d="M 512 211 L 598 128" stroke="#296899" marker-end="url(#arrow-confounder)"/>
+  </g>
+  <circle cx="490" cy="232" r="29" fill="#f6f9fc" stroke="#296899" stroke-width="1.8" stroke-dasharray="5 5"/>
+  <g font-family="Georgia, 'Times New Roman', serif" font-size="40" font-style="italic" text-anchor="middle">
+    <text x="100" y="118" fill="#b34e38">z</text>
+    <text x="360" y="118" fill="#353b42">x</text>
+    <text x="620" y="118" fill="#353b42">y</text>
+    <text x="490" y="245" fill="#296899">c</text>
+  </g>
+  <g font-family="Arial, Helvetica, sans-serif" font-size="21" text-anchor="middle">
+    <text x="100" y="56" fill="#b34e38">Instrument</text>
+    <text x="360" y="56" fill="#353b42">Regressor</text>
+    <text x="620" y="56" fill="#353b42">Outcome</text>
+    <text x="490" y="296" fill="#296899">Unobserved confounder</text>
+  </g>
+</svg>

@@ -1,0 +1,24 @@
+<p class="page__meta page__byline">
+  <span class="page__authors">
+    {%- for byline_entry in page.authors -%}
+      {%- if byline_entry.name -%}
+        {%- assign byline_person = byline_entry -%}
+      {%- else -%}
+        {%- assign byline_person = site.data.authors[byline_entry] | default: byline_entry -%}
+      {%- endif -%}
+      {%- assign byline_name = byline_person.name | default: byline_person -%}
+      {%- assign byline_url = byline_person.url | default: byline_person.uri -%}
+      {%- unless forloop.first -%}, {% endunless -%}
+      <span class="page__author" itemprop="author" itemscope itemtype="https://schema.org/Person">
+        {%- if byline_url -%}
+          <a href="{{ byline_url | relative_url | escape }}" rel="author" itemprop="url"><span itemprop="name">{{ byline_name | escape }}</span></a>
+        {%- else -%}
+          <span itemprop="name">{{ byline_name | escape }}</span>
+        {%- endif -%}
+      </span>
+    {%- endfor -%}
+  </span>
+  {% if page.read_time %}
+    <span class="page__byline-read-time"><span aria-hidden="true">· </span>{% include read-time.html %}</span>
+  {% endif %}
+</p>

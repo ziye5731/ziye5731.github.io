@@ -42,6 +42,25 @@ In inline math, prefer `\lVert ...\rVert`, `\lbrace ...\rbrace`, and
 `_{\ast}` to prevent Markdown from interpreting TeX delimiters as formatting.
 Contents lists use ordinary heading links.
 
+### Article authors
+
+Add an `authors` list to an article's YAML front matter. Names appear below
+the title in the order written, alongside the reading time when enabled:
+
+```yaml
+authors:
+  - name: Ziye Zhang
+    url: /
+  - name: Yifan Hu
+    url: https://sites.google.com/view/yifan-hu/
+```
+
+Each `url` is optional. A list of plain names, such as
+`authors: [Ziye Zhang, Yifan Hu]`, also works; entries can additionally refer
+to profiles in `_data/authors.yml`. The byline is independent of the sidebar's
+`author_profile` setting. Pages without `authors` retain their existing
+header, and the article body does not need a separate signature line.
+
 ## Local preview
 
 Use Ruby 3.1 or later with Bundler, then install the dependencies:

@@ -31,6 +31,11 @@
     .page__share {
       @include full();
     }
+
+    // Header metadata belongs in normal flow, so the date does not wrap around it.
+    > header .page__meta {
+      float: none;
+    }
   }
 }
 
@@ -49,6 +54,11 @@
 }
 
 .page__content {
+  img[src$="/iv-dag.png"] {
+    display: block;
+    margin-inline: auto;
+  }
+
   mjx-container[display="true"] {
     max-width: 100%;
     overflow-x: auto;
@@ -250,6 +260,31 @@
 
   a {
     color: inherit;
+  }
+}
+
+/* Ordered article authors, with reading time alongside the byline. */
+.page__byline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25em 0.5em;
+  margin-bottom: 0.75em;
+  font-size: 0.875em;
+  line-height: 1.6;
+
+  .page__authors {
+    min-width: 0;
+    color: var(--global-text-color);
+    overflow-wrap: break-word;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+
+  .page__byline-read-time {
+    white-space: nowrap;
   }
 }
 
