@@ -85,19 +85,19 @@ where differentiation is assumed to pass through expectation. To estimate this p
 
 Our aim is therefore to retain the directly evaluable moment condition while making its optimization fully streaming:
 
-> **One observed tuple per update, no conditional two-sample oracle, and no first-stage or conditional-model nuisance estimation.**
+> **One observed tuple per update (streaming), no conditional two-sample oracle, and no first-stage or conditional-model nuisance estimation.**
 
-The comparison below focuses on 2SLS and the streaming methods relevant to this goal. Here “nuisance fit” means an additional first-stage or conditional-model fit.
 
-| Method | Nonlinear IV? | Two-sample oracle? | Nuisance fit? |
+The comparison below focuses on 2SLS and the streaming methods relevant to this goal.
+
+| Method | Nonlinear IV | Two-sample oracle | Nuisance Estimation |
 |:--|:--|:--|:--|
-| [2SLS][kiv] | No | No | Yes: two-stage form |
+| [2SLS][kiv] | No | No | Yes |
 | [TOSG-IVaR][streaming-iv] | Yes | Yes | No |
 | [OTSG-IVaR][streaming-iv] | No | No | Yes |
-| [SGMM][sgmm] | Yes | No | No |
-| **SSGMM** | **Yes** | **No** | **No** |
+| [SGMM][sgmm] | No | No | No |
+| SSGMM | Yes | No | No |
 
-Here “Nonlinear IV” refers to a structural model nonlinear in its parameters. For SGMM, Yes denotes its proposed nonlinear extension, whose convergence theory is left open. TOSG-IVaR guarantees stationarity, while SSGMM provides the local parameter bounds below. The table uses the cited linear formulations of 2SLS and OTSG-IVaR; 2SLS also admits a weighted-GMM representation.
 
 ## Preliminaries: Hermite moments and the streaming update
 
@@ -143,7 +143,7 @@ $$
 
 Instrument validity gives $\bar m(\theta_{\ast})=0$, so we target $Q(\theta)=\lVert\bar m(\theta)\rVert^2/2$. This squares the expected moment; minimizing $\mathbb E\lVert m(D,\theta)\rVert^2/2$ would generally target a different parameter under endogeneity.
 
-Following the nonlinear SGMM construction [Chen et al. (2025)][sgmm], use a damped gain
+Following the nonlinear SGMM construction [Chen et al. (2025)][sgmm], we use a damped gain
 
 $$
 A_\lambda(S)=(S^\top S+\lambda I_d)^{-1}S^\top,
@@ -163,7 +163,8 @@ S_{t+1}
 \end{aligned}
 $$
 
-Here $\Pi_\Theta$ is Euclidean projection. Crucially, the parameter step uses the **previous Jacobian state** $S_t$, so, with $\mathcal F_t=\sigma(D_1,\ldots,D_t)$,
+Here $\Pi_\Theta$ is Euclidean projection.
+Crucially, the parameter step uses the **previous Jacobian state** $S_t$, so, with $\mathcal F_t=\sigma(D_1,\ldots,D_t)$,
 
 $$
 \mathbb E\!\left[
@@ -177,23 +178,25 @@ Thus the same observation can update both states, even when their sample noises 
 
 ### Identification
 
-Because the selected moments may miss parts of the conditional restriction, instrument validity alone does not identify the parameter. The relevant local sensitivity is
+We denote
 
 $$
 G_{\mathcal K}=\bar M(\theta_*),\qquad
 \mu_{\mathcal K}=\lambda_{\min}(G_{\mathcal K}^\top G_{\mathcal K}).
 $$
 
-**Result 1 — regular local identification.** Assume $D_\theta\bar m=\bar M$ and that $\bar M$ is $L$-Lipschitz in Frobenius norm near $\theta_{\ast}$. If $\mu_{\mathcal K}>0$, then the selected moments locally identify $\theta_{\ast}$. More precisely,
+We have the following result regarding the local identification condition.
+
+**Result 1 — first-order local identification.** The selected moments identify $\theta_{\ast}$ to first order if and only if $G_{\mathcal K}$ has full column rank, equivalently $\mu_{\mathcal K}>0$. Assume $D_\theta\bar m=\bar M$ and that $\bar M$ is $L$-Lipschitz in Frobenius norm near $\theta_{\ast}$. Under this rank condition, local identification follows from the bound
 
 $$
 \|\bar m(\theta_*+e)\|
 \ge\sqrt{\mu_{\mathcal K}}\|e\|-\frac L2\|e\|^2
 $$
 
-whenever the connecting segment stays in that neighborhood. This is the classical full-column-rank sufficient condition for regular local identification [Chen et al. (2014)][identification].
+whenever the connecting segment stays in that neighborhood. Here first-order identification means that every nonzero parameter direction $v$ changes at least one selected moment in the linearization: $G_{\mathcal K}v\ne0$.
 
-**Proof.** Since $\bar m(\theta_{\ast})=0$, the integral Taylor formula gives
+**Proof.** First-order identification requires that $G_{\mathcal K}v=0$ imply $v=0$, which is equivalent to full column rank. To obtain the local bound, use $\bar m(\theta_{\ast})=0$ and the integral Taylor formula:
 
 $$
 \begin{aligned}
@@ -205,7 +208,7 @@ $$
 
 The Lipschitz assumption therefore yields $\lVert R(e)\rVert\le L\lVert e\rVert^2/2$. Meanwhile, full column rank gives $\lVert G_{\mathcal K}e\rVert\ge\sqrt{\mu_{\mathcal K}}\lVert e\rVert$, so the reverse triangle inequality proves the stated bound. Its right-hand side is positive for all sufficiently small nonzero $e$: when $L>0$, it suffices that $\lVert e\rVert<2\sqrt{\mu_{\mathcal K}}/L$, while for $L=0$ the remainder vanishes. Consequently, the moment map has no other zero in a sufficiently small neighborhood. $\square$
 
-Full column rank requires $p_{\mathcal K}\ge d$, but the number of moments alone is insufficient. Moreover, this is a local condition: global identification requires that $\bar m$ have no other zero on the parameter set. Adding basis blocks can increase $\mu_{\mathcal K}$, although their additional sampling noise can still worsen finite-sample estimation.
+Full column rank requires $p_{\mathcal K}\ge d$, but the number of moments alone is insufficient. Rank deficiency rules out first-order identification, although higher-order terms can still identify the parameter locally. Global identification further requires that $\bar m$ have no other zero on the parameter set. Adding basis blocks can increase $\mu_{\mathcal K}$, although their additional sampling noise can still worsen finite-sample estimation.
 
 ### Convergence
 
@@ -418,7 +421,7 @@ $$
 
 The sum grows as $T^{ah-\rho}$ when $ah>\rho$, as $\log T$ at equality, and stays bounded when $ah<\rho$. This proves the corresponding rates $O(T^{-\rho})$, $O(T^{-\rho}\log T)$, and $O(T^{-ah})$; in particular, $\kappa=2/3$ gives the previously stated $ah=1$ boundary and weak-contraction cases. Applying the averaging inequality preserves these orders because their power exponents are at most one.
 
-Finally, if $g$ is linear in its parameters, then $\bar M$ is constant and $L=0$. Therefore the local radius restriction and moving-target term disappear, giving $O(T^{-\eta})$ for $\eta<1$. The [technical supplement (Markdown)](assets/technical-details.md) retains additional identification examples and the original numbered derivation.
+Finally, if $g$ is linear in its parameters, then $\bar M$ is constant and $L=0$. Therefore the local radius restriction and moving-target term disappear, giving $O(T^{-\eta})$ for $\eta<1$. 
 
 ## Experiments
 
