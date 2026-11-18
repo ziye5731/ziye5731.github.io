@@ -17,12 +17,9 @@ Prior to this, I received a B.S. in Data Science in 2024 from Nankai University.
 
 
 ### Research Interests
-My research interests lie at the intersection of **statistics**, **optimization**, and **machine learning**, with a focus on developing explainable and theoretically grounded methods. 
+My current research interests lie at the intersection of **statistics**, **optimization**, and **machine learning**, with a focus on developing explainable and theoretically grounded methods. 
 I am particularly interested in understanding the principles behind modern data-driven models and providing rigorous statistical and mathematical foundations for their behavior.
 
-Currently, I am working on the following topics:
-- Causal inference and effect estimation via conditional stochastic optimization;
-- Understanding neural network training and optimization from the perspective of dynamical systems.
 
 
 ### Service
